@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ainalandia Stock Exchange (ASE)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151d30;
+            --accent-blue: #00f2fe;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #2a3754;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 16px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 650px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); position: relative; }
+        .user-badge-wrapper { position: relative; }
+        .user-badge { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background 0.2s; }
+        .user-badge:hover { background: rgba(255,255,255,0.05); }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-blue); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            width: 220px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .dropdown-menu.active { display: flex; }
+        .dropdown-item {
+            padding: 10px 14px;
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: rgba(0, 242, 254, 0.1); color: var(--accent-blue); }
+
+        .aat-clock { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 0.85rem; font-family: monospace; color: #d8b4fe; font-weight: bold; }
+
+        .nav-tabs { display: flex; gap: 6px; background: var(--card-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .nav-tab { flex: 1; padding: 10px 4px; text-align: center; background: transparent; border: none; color: var(--text-muted); font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+        .nav-tab.active { background: rgba(0,242,254,0.1); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+
+        .tab-content { display: flex; flex-direction: column; gap: 14px; }
+        .tab-content.hidden { display: none !important; }
+
+        .balance-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; display: flex; flex-direction: column; gap: 8px; }
+        .abs-val { font-size: 2rem; font-weight: 800; color: #fff; font-family: monospace; }
+        .capitalization-row { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; margin-top: -4px; margin-bottom: 4px; }
+        .capitalization-val { color: var(--accent-blue); font-weight: bold; }
+        
+        .loan-banner { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-yellow); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
+        .loan-banner.hidden { display: none; }
+        .loan-row { display: flex; justify-content: space-between; align-items: center; }
+        .loan-actions { display: flex; gap: 6px; }
+        .btn-loan { background: var(--accent-yellow); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
+        .btn-loan-repay { background: var(--accent-green); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
+
+        .assets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
+        .asset-box { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+        .asset-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 800; display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding-bottom: 2px; }
+        .asset-pos-line { font-size: 0.68rem; font-family: monospace; display: flex; justify-content: space-between; align-items: center; line-height: 1.2; }
+        .pos-long-tag { color: var(--accent-green); font-weight: 700; }
+        .pos-short-tag { color: var(--accent-yellow); font-weight: 700; }
+        .pnl-mini-up { color: var(--accent-green); font-weight: bold; }
+        .pnl-mini-down { color: var(--accent-red); font-weight: bold; }
+
+        .chart-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; }
+        .chart-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .chart-wrapper { position: relative; height: 200px; width: 100%; }
+
+        .trade-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; position: relative; }
+        
+        .selector-row { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-asset { flex: 1; min-width: 70px; padding: 8px 4px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-muted); font-weight: 600; cursor: pointer; font-size: 0.75rem; text-align: center; }
+        .btn-asset.active { border-color: var(--accent-blue); color: #fff; background: rgba(0,242,254,0.1); }
+        .btn-asset.purple.active { border-color: var(--accent-purple); color: #fff; background: rgba(139, 92, 246, 0.15); }
+
+        .mode-switch-row { display: flex; background: rgba(0,0,0,0.4); padding: 3px; border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; }
+        .btn-mode { flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .btn-mode.active-long { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border-bottom: 2px solid var(--accent-green); }
+        .btn-mode.active-short { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border-bottom: 2px solid var(--accent-red); }
+
+        .rates-display { display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .rate-main-row { display: flex; justify-content: space-between; align-items: center; }
+        .rate-val { font-family: monospace; font-size: 1.3rem; font-weight: 700; }
+        
+        .position-info-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 6px; margin-top: 2px; }
+        .pnl-val { font-weight: 700; font-family: monospace; }
+        .pnl-up { color: var(--accent-green); }
+        .pnl-down { color: var(--accent-red); }
+
+        .slider-section { display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.15); padding: 10px; border-radius: 10px; border: 1px solid rgba(42,55,84,0.4); }
+        .slider-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+        input[type=range] { width: 100%; accent-color: var(--accent-blue); cursor: pointer; }
+        .trade-calc-hint { font-size: 0.75rem; font-family: monospace; color: var(--accent-blue); background: rgba(0, 242, 254, 0.08); padding: 4px 8px; border-radius: 6px; text-align: center; font-weight: 600; min-height: 24px; display: flex; align-items: center; justify-content: center; }
+
+        .presets-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .btn-preset { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
+        .btn-preset:hover { border-color: var(--accent-blue); }
+
+        .trade-actions { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 8px; }
+        .btn-action { padding: 12px 6px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
+        .btn-buy { background: var(--accent-green); color: #000; }
+        .btn-sell { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .btn-sell-all { background: var(--accent-red); color: #fff; }
+        .btn-action:active { opacity: 0.8; }
+
+        .deposit-card { background: var(--card-bg); border: 1px solid var(--accent-purple); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .deposit-header { display: flex; justify-content: space-between; align-items: center; }
+        .deposit-title { font-size: 0.9rem; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .deposit-info { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .deposit-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .dep-stat-item { display: flex; flex-direction: column; }
+        .dep-stat-label { font-size: 0.7rem; color: var(--text-muted); }
+        .dep-stat-val { font-size: 0.95rem; font-weight: 700; font-family: monospace; }
+
+        .deposit-controls { display: flex; flex-direction: column; gap: 8px; }
+        .deposit-btns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .btn-dep { background: var(--accent-purple); color: #fff; border: none; border-radius: 8px; padding: 10px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
+        .btn-dep-eur { background: var(--accent-blue); color: #000; }
+        .btn-dep-out { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red); color: var(--accent-red); }
+        .btn-dep:active { opacity: 0.8; }
+
+        .news-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .news-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
+        .news-item { background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .news-item.pump { border-left: 3px solid var(--accent-green); }
+        .news-item.dump { border-left: 3px solid var(--accent-red); }
+        .news-header-line { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: monospace; }
+        .news-text { font-size: 0.8rem; line-height: 1.3; }
+
+        .history-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .history-header-row { display: flex; justify-content: space-between; align-items: center; }
+        .history-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        
+        .pagination-controls { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted); }
+        .btn-page { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: var(--text-main); padding: 2px 8px; border-radius: 4px; cursor: pointer; }
+        .btn-page:hover { border-color: var(--accent-blue); }
+
+        .history-list { display: flex; flex-direction: column; gap: 4px; min-height: 140px; font-family: monospace; font-size: 0.75rem; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(42,55,84,0.5); }
+        .history-item.buy { border-left: 3px solid var(--accent-green); }
+        .history-item.sell { border-left: 3px solid var(--accent-red); }
+        .history-item.short { border-left: 3px solid var(--accent-yellow); }
+        .history-item.dep { border-left: 3px solid var(--accent-purple); }
+
+        .leader-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .leader-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .leader-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; }
+        .leader-table td { padding: 8px; border-bottom: 1px solid rgba(42,55,84,0.5); font-family: monospace; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #151d30; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--accent-blue); opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap; }
+        .toast.show { opacity: 1; top: 30px; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: var(--card-bg); border: 1px solid var(--border-color); padding: 24px; border-radius: 16px; width: 90%; max-width: 340px; position: relative; }
+        .modal input, .modal select { width: 100%; padding: 10px; margin: 8px 0 16px 0; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="authModal" class="modal-overlay">
+        <div class="modal">
+            <h3 style="text-align: center; margin-bottom: 8px;">Вход на биржу (ASE)</h3>
+            <form onsubmit="event.preventDefault(); login();">
+                <label style="font-size:0.75rem; color:var(--text-muted);">Имя инвестора</label>
+                <input type="text" id="usernameInput" placeholder="Имя инвестора..." maxlength="15" required>
+                <div id="pwdAuthBlock" class="hidden">
+                    <label style="font-size:0.75rem; color:var(--text-muted);">Пароль аккаунта</label>
+                    <input type="password" id="userPwdInput" placeholder="Введите пароль">
+                </div>
+                <button type="submit" class="btn-action btn-buy" style="width: 100%;">Войти в систему</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 style="text-align: center; margin-bottom: 12px;">Настройки профиля</h3>
+            <label style="font-size:0.75rem; color:var(--text-muted);">Установить/изменить пароль</label>
+            <input type="password" id="setPwdInput" placeholder="Оставьте пустым для отмены">
+            
+            <label style="font-size:0.75rem; color:var(--text-muted);">Видимость в списке лидеров</label>
+            <select id="setAnonSelect">
+                <option value="public">Показывать мой ник</option>
+                <option value="anon">Анонимно</option>
+            </select>
+            
+            <div style="display:flex; gap:8px;">
+                <button class="btn-action btn-sell" style="flex:1;" onclick="closeSettings()">Отмена</button>
+                <button class="btn-action btn-buy" style="flex:1;" onclick="saveSettings()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="user-badge-wrapper">
+                <div class="user-badge" onclick="toggleUserDropdown(event)">
+                    <div class="avatar" id="uAvatar">?</div>
+                    <span id="uName">Гость</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">▾</span>
+                </div>
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-item" onclick="switchTab('historyTab')">📜 История сделок</div>
+                    <div class="dropdown-item" onclick="switchTab('leaderTab')">🏆 Список лучших трейдеров</div>
+                    <div class="dropdown-item" onclick="openSettings()">⚙️ Настройки профиля</div>
+                    <div class="dropdown-item" onclick="switchUser()">🚪 Сменить профиль</div>
+                </div>
+            </div>
+            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL</div>
+        </div>
+
+        <div class="aat-clock" id="aatClockDisplay">Время по AAT: Загрузка...</div>
+
+        <div class="balance-card">
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">БАЛАНС (€)</div>
+            <div class="abs-val" id="absDisplay">0.00 €</div>
+            <div class="capitalization-row">Капитализация: <span id="capitalizationDisplay" class="capitalization-val">0.00 €</span></div>
+            
+            <div id="loanBanner" class="loan-banner hidden">
+                <div class="loan-row">
+                    <span id="loanText">Баланс ниже 50 €! Доступен кредит.</span>
+                    <div class="loan-actions">
+                        <button id="loanTakeBtn" class="btn-loan" onclick="takeLoan()">Взять 50 €</button>
+                        <button id="loanRepayBtn" class="btn-loan-repay" onclick="repayLoan()">Погасить долг</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="assets-grid">
+                <div class="asset-box" id="box-AITH">
+                    <div class="asset-title"><span>AITH</span><span id="rate-AITH" style="color:#fff; font-family:monospace;">0.00€</span></div>
+                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-AITH">0.00</span> <span id="pnl-long-AITH">—</span></div>
+                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-AITH">0.00</span> <span id="pnl-short-AITH">—</span></div>
+                </div>
+                <div class="asset-box" id="box-SOFF">
+                    <div class="asset-title"><span>SOFF</span><span id="rate-SOFF" style="color:#fff; font-family:monospace;">0.00€</span></div>
+                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-SOFF">0.00</span> <span id="pnl-long-SOFF">—</span></div>
+                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-SOFF">0.00</span> <span id="pnl-short-SOFF">—</span></div>
+                </div>
+                <div class="asset-box" id="box-BIOM">
+                    <div class="asset-title"><span>BIOM</span><span id="rate-BIOM" style="color:#fff; font-family:monospace;">0.00€</span></div>
+                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-BIOM">0.00</span> <span id="pnl-long-BIOM">—</span></div>
+                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-BIOM">0.00</span> <span id="pnl-short-BIOM">—</span></div>
+                </div>
+                <div class="asset-box" id="box-VOID">
+                    <div class="asset-title"><span style="color:var(--accent-purple);">VOID</span><span id="rate-VOID" style="color:#fff; font-family:monospace;">0.00€</span></div>
+                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-VOID">0.00</span> <span id="pnl-long-VOID">—</span></div>
+                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-VOID">0.00</span> <span id="pnl-short-VOID">—</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button id="tabBtn-tradeTab" class="nav-tab active" onclick="switchTab('tradeTab')">📊 Главная страница</button>
+            <button id="tabBtn-depositTab" class="nav-tab" onclick="switchTab('depositTab')">🏛 Депозитарий</button>
+            <button id="tabBtn-newsTab" class="nav-tab" onclick="switchTab('newsTab')">📰 Новости ASE</button>
+        </div>
+
+        <!-- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА -->
+        <div id="tradeTab" class="tab-content">
+            <div class="chart-card">
+                <div class="chart-controls">
+                    <span style="font-size: 0.85rem; font-weight: 600;" id="chartTitle">Котировки: AITH</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="marketChart"></canvas>
+                </div>
+            </div>
+
+            <div class="trade-card">
+                <div class="selector-row">
+                    <button class="btn-asset active" onclick="selectAsset('AITH', this)">AITH</button>
+                    <button class="btn-asset" onclick="selectAsset('SOFF', this)">SOFF</button>
+                    <button class="btn-asset" onclick="selectAsset('BIOM', this)">BIOM</button>
+                    <button class="btn-asset purple" onclick="selectAsset('VOID', this)">VOID</button>
+                </div>
+
+                <div class="mode-switch-row">
+                    <button id="btnLongMode" class="btn-mode active-long" onclick="setTradeMode('LONG')">📈 ЛОНГ (Рост)</button>
+                    <button id="btnShortMode" class="btn-mode" onclick="setTradeMode('SHORT')">📉 ШОРТ (Падение)</button>
+                </div>
+
+                <div class="rates-display">
+                    <div class="rate-main-row">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Текущий курс:</span>
+                        <span class="rate-val" id="currentRate">0.00 €</span>
+                    </div>
+                    <div class="position-info-row">
+                        <span id="holdingsInfo">У вас: 0.00 акц. (0.00 €)</span>
+                        <span id="pnlInfo" class="pnl-val">PnL: 0.00 €</span>
+                    </div>
+                </div>
+
+                <div class="slider-section">
+                    <div class="slider-header">
+                        <span>Доля сделки</span>
+                        <span id="sliderPercent" style="font-weight: bold; color: var(--accent-blue);">100%</span>
+                    </div>
+                    <input type="range" id="tradeSlider" min="1" max="100" value="100" oninput="updateSlider(this.value)">
+                    <div class="trade-calc-hint" id="tradeCalcHint">Загрузка данных...</div>
+                    <div class="presets-grid">
+                        <button class="btn-preset" onclick="setPreset(25)">25%</button>
+                        <button class="btn-preset" onclick="setPreset(50)">50%</button>
+                        <button class="btn-preset" onclick="setPreset(75)">75%</button>
+                        <button class="btn-preset" onclick="setPreset(100)">MAX</button>
+                    </div>
+                </div>
+
+                <div class="trade-actions" id="tradeActionsBlock"></div>
+            </div>
+
+            <div class="history-card">
+                <div class="history-header-row">
+                    <div class="history-title">Последние сделки (10)</div>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div style="color: var(--text-muted); text-align: center; padding: 12px;">Сделок пока нет</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 2: ДЕПОЗИТАРИЙ -->
+        <div id="depositTab" class="tab-content hidden">
+            <div class="deposit-card">
+                <div class="deposit-header">
+                    <div class="deposit-title">🏛 Депозитарий ценных бумаг и валюты</div>
+                    <div class="deposit-info">Доходность: 7.5% (акции) / 2.5% (€) / 17.5% (VOID) в мес.</div>
+                </div>
+
+                <div class="selector-row">
+                    <button class="btn-asset purple active" onclick="selectDepAsset('AITH', this)">AITH</button>
+                    <button class="btn-asset purple" onclick="selectDepAsset('SOFF', this)">SOFF</button>
+                    <button class="btn-asset purple" onclick="selectDepAsset('BIOM', this)">BIOM</button>
+                    <button class="btn-asset purple" onclick="selectDepAsset('VOID', this)">VOID</button>
+                    <button class="btn-asset purple" onclick="selectDepAsset('EUR', this)">Евро (€)</button>
+                </div>
+
+                <div class="deposit-stats">
+                    <div class="dep-stat-item">
+                        <span class="dep-stat-label">Текущий курс / актив</span>
+                        <span class="dep-stat-val" id="depCurrentRate">0.00 €</span>
+                    </div>
+                    <div class="dep-stat-item" style="text-align: right;">
+                        <span class="dep-stat-label">На депозите со сложн. %</span>
+                        <span class="dep-stat-val" id="depHoldingsDisplay" style="color: var(--accent-purple);">0.00 акц.</span>
+                    </div>
+                </div>
+
+                <div class="slider-section">
+                    <div class="slider-header">
+                        <span>Доля депозитной операции</span>
+                        <span id="depSliderPercent" style="font-weight: bold; color: var(--accent-purple);">100%</span>
+                    </div>
+                    <input type="range" id="depSlider" min="1" max="100" value="100" oninput="updateDepSlider(this.value)">
+                    <div class="trade-calc-hint" id="depCalcHint" style="color: var(--accent-purple); background: rgba(139, 92, 246, 0.08);">Расчет операции...</div>
+                    <div class="presets-grid">
+                        <button class="btn-preset" onclick="setDepPreset(25)">25%</button>
+                        <button class="btn-preset" onclick="setDepPreset(50)">50%</button>
+                        <button class="btn-preset" onclick="setDepPreset(75)">75%</button>
+                        <button class="btn-preset" onclick="setDepPreset(100)">MAX</button>
+                    </div>
+                </div>
+
+                <div class="deposit-controls">
+                    <div class="deposit-btns-grid" id="depositButtonsGrid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 3: НОВОСТИ ASE -->
+        <div id="newsTab" class="tab-content hidden">
+            <div class="news-card">
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка ASE</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Актуальные и прошедшие новости, влияющие на курс акций в AAT (последние 100).</div>
+                <div class="news-list" id="newsListContainer"></div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 4: ИСТОРИЯ (ПОЛНАЯ) -->
+        <div id="historyTab" class="tab-content hidden">
+            <div class="history-card">
+                <div class="history-header-row">
+                    <div class="history-title">Полная история операций</div>
+                    <div class="pagination-controls" id="paginationControls">
+                        <button class="btn-page" onclick="changePage(-1)">◄</button>
+                        <span id="pageIndicator">Стр. 1 из 1</span>
+                        <button class="btn-page" onclick="changePage(1)">►</button>
+                    </div>
+                </div>
+                <div class="history-list" id="fullHistoryList"></div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 5: СПИСОК ЛУЧШИХ ТРЕЙДЕРОВ -->
+        <div id="leaderTab" class="tab-content hidden">
+            <div class="leader-card">
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🏆 Список лучших трейдеров</div>
+                <table class="leader-table">
+                    <thead>
+                        <tr>
+                            <th>Место</th>
+                            <th>Трейдер</th>
+                            <th style="text-align:right;">Капитализация</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="tradeToast" class="toast">Сделка выполнена</div>
+
+    <script>
+        let currentUser = null;
+        let selectedAsset = 'AITH';
+        let selectedDepAsset = 'AITH';
+        let tradeMode = 'LONG';
+        let tradePercent = 100;
+        let depPercent = 100;
+        let chartInstance = null;
+        const TICKS_COUNT = 120;
+        const TICK_INTERVAL_SECONDS = 12;
+        
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 25;
+        const MAX_PAGES = 100;
+
+        const REAL_BASE_UNIX = 1793491200;
+        const AAT_BASE_TIMESTAMP = 0;
+        const AAT_SPEED_MULTIPLIER = 24;
+        const NEWS_SEED_OFFSET = 884920111;
+
+        function createBN(m = 0, e = 0) {
+            let num = { m: Number(m) || 0, e: Number(e) || 0 };
+            return normalizeBN(num);
+        }
+
+        function normalizeBN(val) {
+            if (!val || isNaN(val.m) || val.m === 0) {
+                return { m: 0, e: 0 };
+            }
+            let m = val.m;
+            let e = val.e;
+            while (Math.abs(m) >= 10) {
+                m /= 10;
+                e += 1;
+            }
+            while (Math.abs(m) < 1 && m !== 0) {
+                m *= 10;
+                e -= 1;
+            }
+            m = Math.round(m * 1e10) / 1e10;
+            if (m === 0) return { m: 0, e: 0 };
+            return { m, e };
+        }
+
+        function toNumberBN(val) {
+            if (!val) return 0;
+            if (val.e > 308) return val.m > 0 ? Infinity : -Infinity;
+            return val.m * Math.pow(10, val.e);
+        }
+
+        function fromNumber(num) {
+            if (!num || isNaN(num) || num === 0) return { m: 0, e: 0 };
+            const e = Math.floor(Math.log10(Math.abs(num)));
+            const m = num / Math.pow(10, e);
+            return normalizeBN({ m, e });
+        }
+
+        function addBN(a, b) {
+            let na = normalizeBN(a);
+            let nb = normalizeBN(b);
+            if (na.m === 0) return nb;
+            if (nb.m === 0) return na;
+
+            if (na.e >= nb.e) {
+                let diff = na.e - nb.e;
+                if (diff > 308) return na;
+                let sumM = na.m + nb.m / Math.pow(10, diff);
+                return normalizeBN({ m: sumM, e: na.e });
+            } else {
+                let diff = nb.e - na.e;
+                if (diff > 308) return nb;
+                let sumM = nb.m + na.m / Math.pow(10, diff);
+                return normalizeBN({ m: sumM, e: nb.e });
+            }
+        }
+
+        function subBN(a, b) {
+            let nb = { m: -b.m, e: b.e };
+            return addBN(a, nb);
+        }
+
+        function mulBN(a, b) {
+            let na = normalizeBN(a);
+            let nb = normalizeBN(b);
+            if (na.m === 0 || nb.m === 0) return { m: 0, e: 0 };
+            return normalizeBN({ m: na.m * nb.m, e: na.e + nb.e });
+        }
+
+        function divBN(a, b) {
+            let na = normalizeBN(a);
+            let nb = normalizeBN(b);
+            if (nb.m === 0) throw new Error("Division by zero in BN");
+            if (na.m === 0) return { m: 0, e: 0 };
+            return normalizeBN({ m: na.m / nb.m, e: na.e - nb.e });
+        }
+
+        function compareBN(a, b) {
+            let na = normalizeBN(a);
+            let nb = normalizeBN(b);
+            if (na.m === nb.m && na.e === nb.e) return 0;
+            if (na.m > 0 && nb.m <= 0) return 1;
+            if (na.m <= 0 && nb.m > 0) return -1;
+            if (na.e !== nb.e) return na.e > nb.e ? 1 : -1;
+            return na.m > nb.m ? 1 : -1;
+        }
+
+        function formatBigNumberBN(val, decimals = 2) {
+            let norm = normalizeBN(val);
+            if (!norm || isNaN(norm.m) || norm.m === 0) return '0.00';
+            
+            let valNum = toNumberBN(norm);
+            if (isNaN(valNum)) return '∞';
+            if (norm.m < 0) return '-' + formatBigNumberBN({ m: -norm.m, e: norm.e }, decimals);
+
+            if (norm.e < -3) {
+                return (norm.m).toFixed(decimals) + 'e' + norm.e;
+            }
+
+            if (norm.e < 6) {
+                return valNum.toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            }
+
+            const baseSuffixes = ["m", "b", "t"];
+            const exp = norm.e;
+            const tier = Math.floor((exp - 6) / 3);
+
+            if (tier >= 0 && tier < baseSuffixes.length) {
+                const baseVal = norm.m * Math.pow(10, (exp - 6) % 3);
+                return baseVal.toFixed(3) + baseSuffixes[tier];
+            }
+
+            let remaining = tier - baseSuffixes.length;
+            let suffix = "";
+            let length = 2;
+
+            while (true) {
+                let count = Math.pow(26, length);
+                if (remaining < count) break;
+                remaining -= count;
+                length++;
+            }
+
+            for (let i = length - 1; i >= 0; i--) {
+                let charIndex = Math.floor(remaining / Math.pow(26, i)) % 26;
+                suffix += String.fromCharCode(97 + charIndex);
+            }
+
+            const baseVal = norm.m * Math.pow(10, (exp - 6) % 3);
+            return baseVal.toFixed(3) + suffix;
+        }
+
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function getDaysInMonth(year, month) {
+            const daysInMonths = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            return daysInMonths[month - 1];
+        }
+
+        function getDaysInYear(year) {
+            return isLeapYear(year) ? 366 : 365;
+        }
+
+        function getAATSecondPrecise() {
+            const currentRealUnixPrecise = Date.now() / 1000;
+            const elapsedRealSeconds = currentRealUnixPrecise - REAL_BASE_UNIX;
+            return AAT_BASE_TIMESTAMP + (elapsedRealSeconds * AAT_SPEED_MULTIPLIER);
+        }
+
+        function formatAATTimestamp(secInput, includeSeconds = true) {
+            let sec = Math.floor(secInput);
+            let totalDays = Math.floor(sec / 86400);
+            let secOfCurrentDay = sec % 86400;
+
+            let hours = String(Math.floor(secOfCurrentDay / 3600)).padStart(2, '0');
+            let mins = String(Math.floor((secOfCurrentDay % 3600) / 60)).padStart(2, '0');
+            let secs = String(secOfCurrentDay % 60).padStart(2, '0');
+
+            let year = 2466;
+            while (true) {
+                let dInYear = getDaysInYear(year);
+                if (totalDays >= dInYear) {
+                    totalDays -= dInYear;
+                    year++;
+                } else {
+                    break;
+                }
+            }
+
+            let month = 1;
+            while (month <= 12) {
+                let dInMonth = getDaysInMonth(year, month);
+                if (totalDays >= dInMonth) {
+                    totalDays -= dInMonth;
+                    month++;
+                } else {
+                    break;
+                }
+            }
+
+            let day = totalDays + 1;
+            let dayStr = String(day).padStart(2, '0');
+            let monthStr = String(month).padStart(2, '0');
+
+            let timePart = includeSeconds ? `${hours}:${mins}:${secs}` : `${hours}:${mins}`;
+            return `${year}.${monthStr}.${dayStr} ${timePart}`;
+        }
+
+        const assetConfigs = {
+            AITH: { basePrice: 25.0, vol: 0.012, color: '#00f2fe', seedOffset: 101 },
+            SOFF: { basePrice: 65.0, vol: 0.018, color: '#10b981', seedOffset: 202 },
+            BIOM: { basePrice: 95.0, vol: 0.028, color: '#ef4444', seedOffset: 303 },
+            VOID: { basePrice: 150.0, vol: 0.068, color: '#8b5cf6', seedOffset: 404 }
+        };
+
+        const SECONDS_IN_MONTH = 2592000;
+        const SHARE_DEP_RATE = Math.pow(1.075, 1 / SECONDS_IN_MONTH);
+        const VOID_DEP_RATE = Math.pow(1.175, 1 / SECONDS_IN_MONTH);
+        const EUR_DEP_RATE = Math.pow(1.025, 1 / SECONDS_IN_MONTH);
+
+        let state = {
+            abs: { m: 1.0, e: 2 },
+            assets: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
+            lastDepTime: Date.now(),
+            loanAmount: { m: 0, e: 0 },
+            password: "",
+            isAnon: false,
+            history: []
+        };
+
+        function getSeedRandom(seed) {
+            const x = Math.sin(seed * 99.12345) * 10000;
+            return x - Math.floor(x);
+        }
+
+        const newsTemplates = {
+            AITH: [
+                { type: 'PUMP', text: 'AinaTech патентует квантовый чип нового поколения!', mult: 3.2 },
+                { type: 'DUMP', text: 'Кибератака на дата-центры AinaTech приостановила торги.', mult: 0.38 },
+                { type: 'PUMP', text: 'Городской совет передал стратегический контракт на цифровизацию в руки AinaTech!', mult: 3.8 },
+                { type: 'DUMP', text: 'Утечка закрытых протоколов безопасности из лабораторий AinaTech.', mult: 0.42 }
+            ],
+            SOFF: [
+                { type: 'PUMP', text: 'SvetOFF успешно запустила экспериментальный термоядерный реактор!', mult: 3.5 },
+                { type: 'DUMP', text: 'Авария на главной подстанции SvetOFF оставила ключевые районы без света.', mult: 0.35 },
+                { type: 'PUMP', text: 'SvetOFF презентовала сеть беспроводной передачи энергии.', mult: 3.0 },
+                { type: 'DUMP', text: 'Энергетические штрафы регуляторов за сбои в сетях SvetOFF.', mult: 0.40 }
+            ],
+            BIOM: [
+                { type: 'PUMP', text: 'BioMusor нашла способ синтеза чистого золота из вторичного сырья!', mult: 4.5 },
+                { type: 'DUMP', text: 'Экологический пикет у главного терминала BioMusor спровоцировал панику.', mult: 0.25 },
+                { type: 'PUMP', text: 'BioMusor подписала договор с космодромом на утилизацию мусора на орбите.', mult: 3.8 },
+                { type: 'DUMP', text: 'Технологический сбой на перерабатывающих комплексах BioMusor.', mult: 0.30 }
+            ],
+            VOID: [
+                { type: 'PUMP', text: 'Void Energy свернула пространство-время и извлекла бесконечную энергию из вакуума!', mult: 10.0 },
+                { type: 'DUMP', text: 'Черная дыра в лаборатории Void Energy поглотила три корпуса и инвесторов!', mult: 0.10 },
+                { type: 'PUMP', text: 'Void Energy объявила об открытии портала в параллельную экономику.', mult: 8.5 },
+                { type: 'DUMP', text: 'Критический коллапс квантовых стабилизаторов Void Energy.', mult: 0.15 }
+            ]
+        };
+
+        function getNewsExactTime(blockIndex) {
+            const newsIntervalSec = 172800;
+            const baseTime = blockIndex * newsIntervalSec;
+            const timeOffset = Math.floor(getSeedRandom(blockIndex + NEWS_SEED_OFFSET + 555) * 151200) + 7200;
+            return baseTime + timeOffset;
+        }
+
+        function getNewsMultiplierAtSecond(targetAATSecond, asset) {
+            const newsIntervalSec = 172800;
+            const currentBlock = Math.floor(targetAATSecond / newsIntervalSec);
+            let accumulatedMult = 1.0;
+            const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
+
+            for (let b = 0; b <= currentBlock; b++) {
+                const exactNewsTime = getNewsExactTime(b);
+                if (exactNewsTime > targetAATSecond) continue;
+
+                const rndAssetIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length);
+                const targetedAsset = assetsArr[rndAssetIdx];
+                
+                if (targetedAsset === asset) {
+                    const templates = newsTemplates[asset];
+                    const rndTplIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length);
+                    const tpl = templates[rndTplIdx];
+
+                    const elapsedSinceNews = targetAATSecond - exactNewsTime;
+                    const isPump = tpl.type === 'PUMP';
+                    const floorLevel = isPump ? 1.13 : 0.93;
+
+                    if (elapsedSinceNews >= 0 && elapsedSinceNews < 86400) {
+                        const progress = elapsedSinceNews / 86400;
+                        const currentEffect = tpl.mult + (floorLevel - tpl.mult) * progress;
+                        accumulatedMult *= currentEffect;
+                    } else if (elapsedSinceNews >= 86400) {
+                        accumulatedMult *= floorLevel;
+                    }
+                }
+            }
+            return accumulatedMult;
+        }
+
+        function getActiveNewsHistory() {
+            const currentAAT = getAATSecondPrecise();
+            const newsIntervalSec = 172800;
+            const currentBlock = Math.floor(currentAAT / newsIntervalSec);
+            const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
+            const history = [];
+
+            const startBlock = Math.max(0, currentBlock - 100);
+
+            for (let b = startBlock; b <= currentBlock; b++) {
+                const exactNewsTime = getNewsExactTime(b);
+                if (exactNewsTime > currentAAT) break;
+
+                const rndAssetIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length);
+                const targetedAsset = assetsArr[rndAssetIdx];
+                const templates = newsTemplates[targetedAsset];
+                const rndTplIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length);
+                const tpl = templates[rndTplIdx];
+
+                history.unshift({
+                    dateStr: `${formatAATTimestamp(exactNewsTime, false)} AAT`,
+                    asset: targetedAsset,
+                    type: tpl.type,
+                    text: tpl.text,
+                    mult: tpl.mult
+                });
+            }
+            return history.slice(0, 100);
+        }
+
+        function renderNewsList() {
+            const container = document.getElementById('newsListContainer');
+            if (!container) return;
+
+            const news = getActiveNewsHistory();
+            if (news.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Новостей пока нет</div>';
+                return;
+            }
+
+            let html = '';
+            news.forEach(n => {
+                const isPump = n.type === 'PUMP';
+                const cls = isPump ? 'pump' : 'dump';
+                html += `<div class="news-item ${cls}">
+                    <div class="news-header-line">
+                        <span><b>[${n.dateStr}]</b> Актив: ${n.asset}</span>
+                        <span style="color: ${isPump ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${isPump ? '📈 ПАМП (x' + n.mult.toFixed(2) + ')' : '📉 ДАМП (x' + n.mult.toFixed(2) + ')'}</span>
+                    </div>
+                    <div class="news-text">${n.text}</div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function getAbsolutePriceAtSecond(targetAATSecond, asset) {
+            const config = assetConfigs[asset];
+            const startEpoch = AAT_BASE_TIMESTAMP;
+            const elapsedMonths = Math.max(0, (targetAATSecond - startEpoch) / SECONDS_IN_MONTH);
+            const currentTrendBase = config.basePrice * Math.pow(1.12, elapsedMonths);
+
+            const chunkStep = TICK_INTERVAL_SECONDS;
+            const targetChunk = Math.floor(targetAATSecond / chunkStep);
+            
+            let price = currentTrendBase;
+            const startChunk = Math.max(0, targetChunk - 100);
+
+            for (let c = startChunk; c <= targetChunk; c++) {
+                const rnd = getSeedRandom(c + config.seedOffset);
+                const delta = (rnd - 0.495) * config.vol * price;
+                price += delta;
+            }
+
+            const subRnd = getSeedRandom(targetChunk + config.seedOffset * 2);
+            const subDelta = (subRnd - 0.5) * (config.vol * price * 0.6);
+            price = Math.max(1.0, price + subDelta);
+
+            const newsMultiplier = getNewsMultiplierAtSecond(targetAATSecond, asset);
+            price *= newsMultiplier;
+
+            return fromNumber(price);
+        }
+
+        function getRawTicksHistory(asset) {
+            const currentAATSecond = getAATSecondPrecise();
+            const history = [];
+            for (let i = TICKS_COUNT - 1; i >= 0; i--) {
+                const sec = currentAATSecond - (i * TICK_INTERVAL_SECONDS);
+                history.push(toNumberBN(getAbsolutePriceAtSecond(sec, asset)));
+            }
+            return history;
+        }
+
+        function processDepositCompound() {
+            const now = Date.now();
+            const elapsedRealMs = now - state.lastDepTime;
+            if (elapsedRealMs >= 500) {
+                const elapsedSec = elapsedRealMs / 1000;
+                const effectiveSec = elapsedSec * AAT_SPEED_MULTIPLIER;
+                state.lastDepTime = now;
+
+                const shareLogPerSec = Math.log10(SHARE_DEP_RATE);
+                const voidLogPerSec = Math.log10(VOID_DEP_RATE);
+                const eurLogPerSec = Math.log10(EUR_DEP_RATE);
+
+                const totalShareLogOffset = effectiveSec * shareLogPerSec;
+                const totalVoidLogOffset = effectiveSec * voidLogPerSec;
+                const totalEurLogOffset = effectiveSec * eurLogPerSec;
+
+                function compoundBN(dep, logOffset) {
+                    if (!dep || (dep.m === 0 && dep.e === 0)) return { m: 0, e: 0 };
+                    let m = dep.m;
+                    let e = dep.e;
+                    let currentLog = e + Math.log10(m);
+                    let newLog = currentLog + logOffset;
+                    let newE = Math.floor(newLog);
+                    let newM = Math.pow(10, newLog - newE);
+                    return normalizeBN({ m: newM, e: newE });
+                }
+
+                ['AITH', 'SOFF', 'BIOM'].forEach(a => {
+                    if (state.deposits[a]) {
+                        state.deposits[a] = compoundBN(state.deposits[a], totalShareLogOffset);
+                    }
+                });
+
+                if (state.deposits.VOID) {
+                    state.deposits.VOID = compoundBN(state.deposits.VOID, totalVoidLogOffset);
+                }
+
+                if (state.deposits.EUR) {
+                    state.deposits.EUR = compoundBN(state.deposits.EUR, totalEurLogOffset);
+                }
+            }
+        }
+
+        function updateAATClockFast() {
+            const currentAATSec = getAATSecondPrecise();
+            document.getElementById('aatClockDisplay').innerText = `Время по AAT: ${formatAATTimestamp(currentAATSec, true)}`;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            const mainBtn = document.getElementById(`tabBtn-${tabId}`);
+            if(mainBtn) mainBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.remove('hidden');
+
+            document.getElementById('userDropdown').classList.remove('active');
+
+            if (tabId === 'newsTab') renderNewsList();
+            if (tabId === 'historyTab') renderFullHistory();
+            if (tabId === 'leaderTab') renderLeaderboard();
+        }
+
+        function toggleUserDropdown(e) {
+            e.stopPropagation();
+            document.getElementById('userDropdown').classList.toggle('active');
+        }
+
+        document.addEventListener('click', () => {
+            document.getElementById('userDropdown').classList.remove('active');
+        });
+
+        function selectDepAsset(asset, btn) {
+            selectedDepAsset = asset;
+            btn.parentElement.querySelectorAll('.btn-asset').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderDepositButtons();
+            updateDepositUI();
+        }
+
+        function updateDepSlider(val) {
+            depPercent = parseInt(val);
+            document.getElementById('depSliderPercent').innerText = depPercent + '%';
+            updateDepCalculationHint();
+        }
+
+        function setDepPreset(val) {
+            document.getElementById('depSlider').value = val;
+            updateDepSlider(val);
+        }
+
+        function updateDepCalculationHint() {
+            const hintElem = document.getElementById('depCalcHint');
+            if (!hintElem) return;
+
+            const curSec = getAATSecondPrecise();
+            const pctFraction = depPercent / 100;
+            const pctBN = fromNumber(pctFraction);
+
+            if (selectedDepAsset === 'EUR') {
+                const eurBal = mulBN(state.abs, pctBN);
+                const depEur = mulBN(state.deposits.EUR || createBN(0,0), pctBN);
+                hintElem.innerText = `Внесение: ${formatBigNumberBN(eurBal, 2)} € | Вывод ${depPercent}%: ${formatBigNumberBN(depEur, 2)} €`;
+            } else {
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                const eurForBuy = mulBN(state.abs, pctBN);
+                const sharesToBuy = divBN(eurForBuy, priceBN);
+
+                const ownedShares = state.assets[selectedDepAsset] || createBN(0,0);
+                const sharesToTransfer = mulBN(ownedShares, pctBN);
+
+                const depShares = state.deposits[selectedDepAsset] || createBN(0,0);
+                const sharesToWithdraw = mulBN(depShares, pctBN);
+
+                hintElem.innerText = `Покупка за €: ~${formatBigNumberBN(sharesToBuy, 4)} акц. | Из портфеля: ${formatBigNumberBN(sharesToTransfer, 4)} акц. | С деп.: ${formatBigNumberBN(sharesToWithdraw, 4)} акц.`;
+            }
+        }
+
+        function renderDepositButtons() {
+            const grid = document.getElementById('depositButtonsGrid');
+            if (selectedDepAsset === 'EUR') {
+                grid.innerHTML = `
+                    <button class="btn-dep btn-dep-eur" onclick="depositAction('DEPOSIT_EUR')">ПОЛОЖИТЬ НА ДЕПОЗИТ</button>
+                    <button class="btn-dep btn-dep-out" onclick="depositAction('WITHDRAW_EUR')">ВЫВЕСТИ С ДЕПОЗИТА</button>
+                `;
+            } else {
+                grid.innerHTML = `
+                    <button class="btn-dep btn-dep-eur" onclick="depositAction('BUY_EUR')">КУПИТЬ ЗА €</button>
+                    <button class="btn-dep" onclick="depositAction('TRANSFER_SHARES')">ПЕРЕВОД ИЗ ПОРТФЕЛЯ</button>
+                    <button class="btn-dep" style="background:var(--accent-green); color:#000;" onclick="depositAction('SELL_DEP_EUR')">ПРОДАТЬ ЗА €</button>
+                    <button class="btn-dep btn-dep-out" onclick="depositAction('OUT_ALL')">ВЫВЕСТИ ВСЁ В ПОРТФЕЛЬ</button>
+                `;
+            }
+        }
+
+        function updateDepositUI() {
+            processDepositCompound();
+            const curSec = getAATSecondPrecise();
+
+            if (selectedDepAsset === 'EUR') {
+                document.getElementById('depCurrentRate').innerText = '1.00 € (2.5%/мес)';
+                const depVal = state.deposits.EUR || createBN(0,0);
+                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 2) + ' €';
+            } else if (selectedDepAsset === 'VOID') {
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                document.getElementById('depCurrentRate').innerText = formatBigNumberBN(priceBN, 2) + ' € (17.5%/мес)';
+                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
+                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 4) + ' акц.';
+            } else {
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                document.getElementById('depCurrentRate').innerText = formatBigNumberBN(priceBN, 2) + ' € (7.5%/мес)';
+                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
+                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 4) + ' акц.';
+            }
+            updateDepCalculationHint();
+        }
+
+        function depositAction(actionType) {
+            processDepositCompound();
+            const curSec = getAATSecondPrecise();
+            const pctFraction = depPercent / 100;
+            const pctBN = fromNumber(pctFraction);
+
+            if (actionType === 'DEPOSIT_EUR') {
+                const amountEur = mulBN(state.abs, pctBN);
+                if (amountEur.m === 0) {
+                    showToast('Недостаточно средств на балансе (€)!');
+                    return;
+                }
+                state.abs = subBN(state.abs, amountEur);
+                state.deposits.EUR = addBN(state.deposits.EUR || createBN(0,0), amountEur);
+                showToast(`Положено на депозит: +${formatBigNumberBN(amountEur, 2)} € (${depPercent}%)`);
+                addHistoryRecord('ДЕПОЗИТ €', `Вложено ${formatBigNumberBN(amountEur, 2)} € (${depPercent}%)`, `-${formatBigNumberBN(amountEur, 2)} €`, createBN(1, 0), state.abs);
+
+            } else if (actionType === 'WITHDRAW_EUR') {
+                const eurVal = mulBN(state.deposits.EUR || createBN(0,0), pctBN);
+                if (eurVal.m === 0) {
+                    showToast('На депозите нет евро!');
+                    return;
+                }
+                state.abs = addBN(state.abs, eurVal);
+                state.deposits.EUR = subBN(state.deposits.EUR, eurVal);
+                showToast(`Выведено с депозита: +${formatBigNumberBN(eurVal, 2)} € (${depPercent}%)`);
+                addHistoryRecord('ДЕПОЗИТ €', `Выведено ${formatBigNumberBN(eurVal, 2)} € с депозита (${depPercent}%)`, `+${formatBigNumberBN(eurVal, 2)} €`, createBN(1, 0), state.abs);
+
+            } else if (actionType === 'BUY_EUR') {
+                const costEuro = mulBN(state.abs, pctBN);
+                if (costEuro.m === 0) {
+                    showToast('Недостаточно средств (€)!');
+                    return;
+                }
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                const boughtShares = divBN(costEuro, priceBN);
+
+                state.abs = subBN(state.abs, costEuro);
+                state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), boughtShares);
+
+                showToast(`Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedDepAsset} в депозит (${depPercent}%)`);
+                addHistoryRecord('ДЕПОЗИТ', `Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedDepAsset} за ${formatBigNumberBN(costEuro, 2)} €`, `-${formatBigNumberBN(costEuro, 2)} €`, priceBN, state.abs);
+
+            } else if (actionType === 'TRANSFER_SHARES') {
+                const owned = state.assets[selectedDepAsset] || createBN(0,0);
+                const sharesToTransfer = mulBN(owned, pctBN);
+                if (sharesToTransfer.m === 0) {
+                    showToast(`Недостаточно акций ${selectedDepAsset} в портфеле!`);
+                    return;
+                }
+
+                state.assets[selectedDepAsset] = subBN(owned, sharesToTransfer);
+                state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), sharesToTransfer);
+
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                showToast(`Переведено ${formatBigNumberBN(sharesToTransfer, 4)} акц. в депозит (${depPercent}%)`);
+                addHistoryRecord('ДЕПОЗИТ', `Переведено ${formatBigNumberBN(sharesToTransfer, 4)} акц. ${selectedDepAsset} в депозит`, `${formatBigNumberBN(sharesToTransfer, 4)} акц.`, priceBN, state.abs);
+
+            } else if (actionType === 'SELL_DEP_EUR') {
+                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
+                const sharesToSell = mulBN(depVal, pctBN);
+                if (sharesToSell.m === 0) {
+                    showToast('На депозите нет акций для продажи!');
+                    return;
+                }
+
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                const revenue = mulBN(sharesToSell, priceBN);
+
+                state.deposits[selectedDepAsset] = subBN(depVal, sharesToSell);
+                state.abs = addBN(state.abs, revenue);
+
+                showToast(`Продано с депозита ${formatBigNumberBN(sharesToSell, 4)} акц. Выручено: +${formatBigNumberBN(revenue, 2)} €`);
+                addHistoryRecord('ДЕПОЗИТ', `Продано с депозита ${formatBigNumberBN(sharesToSell, 4)} акц. ${selectedDepAsset}`, `+${formatBigNumberBN(revenue, 2)} €`, priceBN, state.abs);
+
+            } else if (actionType === 'OUT_ALL') {
+                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
+                if (depVal.m === 0) {
+                    showToast('На депозите нет акций!');
+                    return;
+                }
+
+                state.assets[selectedDepAsset] = addBN(state.assets[selectedAsset] || createBN(0,0), depVal);
+                state.deposits[selectedDepAsset] = createBN(0,0);
+
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
+                showToast(`Выведено ${formatBigNumberBN(depVal, 4)} акц. с депозита в портфель (100%)`);
+                addHistoryRecord('ДЕПОЗИТ', `Выведено ${formatBigNumberBN(depVal, 4)} акц. ${selectedDepAsset} в портфель`, `+${formatBigNumberBN(depVal, 4)} акц.`, priceBN, state.abs);
+            }
+
+            saveProfile();
+            updateUI();
+            updateChartTick();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            const initialLabels = Array(TICKS_COUNT).fill('');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: initialLabels,
+                    datasets: [{
+                        label: selectedAsset,
+                        data: getRawTicksHistory(selectedAsset),
+                        borderColor: assetConfigs[selectedAsset].color,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.35,
+                        fill: true,
+                        backgroundColor: assetConfigs[selectedAsset].color + '15'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { display: false },
+                        y: { 
+                            grid: { color: '#2a3754' }, 
+                            ticks: { 
+                                color: '#94a3b8', 
+                                font: { size: 10 },
+                                callback: function(value) { return formatBigNumberBN(fromNumber(value), 2) + '€'; }
+                            } 
+                        }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Курс: ' + formatBigNumberBN(fromNumber(context.raw), 2) + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartTick() {
+            processDepositCompound();
+
+            if (chartInstance) {
+                const prices = getRawTicksHistory(selectedAsset);
+                const config = assetConfigs[selectedAsset];
+
+                chartInstance.data.datasets[0].label = selectedAsset;
+                chartInstance.data.datasets[0].data = prices;
+                chartInstance.data.datasets[0].borderColor = config.color;
+                chartInstance.data.datasets[0].backgroundColor = config.color + '15';
+                chartInstance.update('none');
+
+                const curSec = getAATSecondPrecise();
+                const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
+                document.getElementById('currentRate').innerText = formatBigNumberBN(priceBN, 2) + ' €';
+
+                updatePositionDisplay(priceBN);
+            }
+
+            checkLoanStatus();
+            updateDepositUI();
+            updateBalanceGridAssets();
+            updateSliderCalculationHint();
+            updateCapitalizationDisplay();
+        }
+
+        function updateCapitalizationDisplay() {
+            const curSec = getAATSecondPrecise();
+            let capBN = state.abs || createBN(100, 0);
+
+            if (state.deposits && state.deposits.EUR) {
+                capBN = addBN(capBN, state.deposits.EUR);
+            }
+
+            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(a => {
+                const priceBN = getAbsolutePriceAtSecond(curSec, a);
+                const shares = addBN(
+                    state.assets && state.assets[a] ? state.assets[a] : createBN(0,0),
+                    state.deposits && state.deposits[a] ? state.deposits[a] : createBN(0,0)
+                );
+                const sharesVal = mulBN(shares, priceBN);
+                capBN = addBN(capBN, sharesVal);
+
+                if (state.shorts && state.shorts[a]) {
+                    const shortShares = state.shorts[a];
+                    const openAvgBN = state.shortAvgPrices[a] || priceBN;
+                    const initialValBN = mulBN(shortShares, openAvgBN);
+                    const currentValBN = mulBN(shortShares, priceBN);
+                    const shortPnlBN = subBN(initialValBN, currentValBN);
+                    capBN = addBN(capBN, shortPnlBN);
+                }
+            });
+
+            const capElem = document.getElementById('capitalizationDisplay');
+            if (capElem) {
+                capElem.innerText = formatBigNumberBN(capBN, 2) + ' €';
+            }
+        }
+
+        function updateBalanceGridAssets() {
+            const curSec = getAATSecondPrecise();
+            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
+                const priceBN = getAbsolutePriceAtSecond(curSec, asset);
+                const rateElem = document.getElementById(`rate-${asset}`);
+                if (rateElem) rateElem.innerText = formatBigNumberBN(priceBN, 2) + '€';
+
+                const longShares = state.assets[asset] || createBN(0,0);
+                const longElem = document.getElementById(`long-${asset}`);
+                const pnlLongElem = document.getElementById(`pnl-long-${asset}`);
+                if (longElem) longElem.innerText = formatBigNumberBN(longShares, 4);
+                if (pnlLongElem) {
+                    const avgPriceBN = state.avgPrices[asset] || createBN(0,0);
+                    if (longShares.m > 0 && avgPriceBN.m > 0) {
+                        const costBN = mulBN(longShares, avgPriceBN);
+                        const valBN = mulBN(longShares, priceBN);
+                        const pnlBN = subBN(valBN, costBN);
+                        const sign = pnlBN.m >= 0 ? '+' : '';
+                        pnlLongElem.innerText = `(${sign}${formatBigNumberBN(pnlBN, 1)}€)`;
+                        pnlLongElem.className = pnlBN.m >= 0 ? 'pnl-mini-up' : 'pnl-mini-down';
+                    } else {
+                        pnlLongElem.innerText = '—';
+                        pnlLongElem.className = '';
+                    }
+                }
+
+                const shortShares = state.shorts[asset] || createBN(0,0);
+                const shortElem = document.getElementById(`short-${asset}`);
+                const pnlShortElem = document.getElementById(`pnl-short-${asset}`);
+                if (shortElem) shortElem.innerText = formatBigNumberBN(shortShares, 4);
+                if (pnlShortElem) {
+                    const openAvgBN = state.shortAvgPrices[asset] || createBN(0,0);
+                    if (shortShares.m > 0 && openAvgBN.m > 0) {
+                        const openValBN = mulBN(shortShares, openAvgBN);
+                        const curValBN = mulBN(shortShares, priceBN);
+                        const pnlBN = subBN(openValBN, curValBN);
+                        const sign = pnlBN.m >= 0 ? '+' : '';
+                        pnlShortElem.innerText = `(${sign}${formatBigNumberBN(pnlBN, 1)}€)`;
+                        pnlShortElem.className = pnlBN.m >= 0 ? 'pnl-mini-up' : 'pnl-mini-down';
+                    } else {
+                        pnlShortElem.innerText = '—';
+                        pnlShortElem.className = '';
+                    }
+                }
+            });
+        }
+
+        function updateSliderCalculationHint() {
+            const hintElem = document.getElementById('tradeCalcHint');
+            if (!hintElem) return;
+
+            const curSec = getAATSecondPrecise();
+            const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
+            const pctFraction = tradePercent / 100;
+            const pctBN = fromNumber(pctFraction);
+
+            if (tradeMode === 'LONG') {
+                const ownedShares = state.assets[selectedAsset] || createBN(0,0);
+                const buyAmountEur = mulBN(state.abs, pctBN);
+                const buyShares = divBN(buyAmountEur, priceBN);
+
+                const sellShares = mulBN(ownedShares, pctBN);
+                const sellGainEur = mulBN(sellShares, priceBN);
+                const avgPriceBN = state.avgPrices[selectedAsset] || priceBN;
+                const costBN = mulBN(sellShares, avgPriceBN);
+                const pnlBN = subBN(sellGainEur, costBN);
+                const pnlSign = pnlBN.m >= 0 ? '+' : '';
+
+                if (ownedShares.m > 0) {
+                    hintElem.innerText = `Закупка: ${formatBigNumberBN(buyAmountEur, 2)} € (~${formatBigNumberBN(buyShares, 4)} акц.) | Продажа ${tradePercent}%: +${formatBigNumberBN(sellGainEur, 2)} € (PnL: ${pnlSign}${formatBigNumberBN(pnlBN, 2)} €)`;
+                } else {
+                    hintElem.innerText = `Закупка (Покупка): будет использовано ${formatBigNumberBN(buyAmountEur, 2)} € со счета (~${formatBigNumberBN(buyShares, 4)} акц.)`;
+                }
+            } else {
+                const shortShares = state.shorts[selectedAsset] || createBN(0,0);
+                const openMarginEur = mulBN(state.abs, pctBN);
+                const openShortShares = divBN(openMarginEur, priceBN);
+
+                const closeShares = mulBN(shortShares, pctBN);
+                const openAvgBN = state.shortAvgPrices[selectedAsset] || priceBN;
+                const initialValBN = mulBN(closeShares, openAvgBN);
+                const currentValBN = mulBN(closeShares, priceBN);
+                const pnlBN = subBN(initialValBN, currentValBN);
+                const pnlSign = pnlBN.m >= 0 ? '+' : '';
+
+                if (shortShares.m > 0) {
+                    hintElem.innerText = `Открытие шорта: ${formatBigNumberBN(openMarginEur, 2)} € | Закрытие ${tradePercent}%: ${formatBigNumberBN(closeShares, 4)} акц. (PnL: ${pnlSign}${formatBigNumberBN(pnlBN, 2)} €)`;
+                } else {
+                    hintElem.innerText = `Открытие Шорта: залог с баланса ${formatBigNumberBN(openMarginEur, 2)} € (~${formatBigNumberBN(openShortShares, 4)} акц.)`;
+                }
+            }
+        }
+
+        function setTradeMode(mode) {
+            tradeMode = mode;
+            const btnLong = document.getElementById('btnLongMode');
+            const btnShort = document.getElementById('btnShortMode');
+
+            if (mode === 'LONG') {
+                btnLong.className = 'btn-mode active-long';
+                btnShort.className = 'btn-mode';
+            } else {
+                btnLong.className = 'btn-mode';
+                btnShort.className = 'btn-mode active-short';
+            }
+            renderTradeButtons();
+            updateChartTick();
+        }
+
+        function renderTradeButtons() {
+            const block = document.getElementById('tradeActionsBlock');
+            if (tradeMode === 'LONG') {
+                block.innerHTML = `
+                    <button class="btn-action btn-buy" onclick="executeTrade('BUY_LONG')">КУПИТЬ (ЛОНГ)</button>
+                    <button class="btn-action btn-sell" onclick="executeTrade('SELL_LONG_PART')">ПРОДАТЬ %</button>
+                    <button class="btn-action btn-sell-all" onclick="executeTrade('SELL_LONG_ALL')">ПРОДАТЬ ВСЁ</button>
+                `;
+            } else {
+                block.innerHTML = `
+                    <button class="btn-action btn-sell-all" style="background:var(--accent-yellow); color:#000;" onclick="executeTrade('OPEN_SHORT')">ОТКРЫТЬ ШОРТ</button>
+                    <button class="btn-action btn-sell" onclick="executeTrade('CLOSE_SHORT_PART')">ЗАКРЫТЬ %</button>
+                    <button class="btn-action btn-buy" onclick="executeTrade('CLOSE_SHORT_ALL')">ЗАКРЫТЬ ВСЁ</button>
+                `;
+            }
+        }
+
+        function updatePositionDisplay(priceBN) {
+            const holdingsElem = document.getElementById('holdingsInfo');
+            const pnlElem = document.getElementById('pnlInfo');
+
+            if (tradeMode === 'LONG') {
+                const shares = state.assets[selectedAsset] || createBN(0,0);
+                const holdingsValBN = mulBN(shares, priceBN);
+                holdingsElem.innerText = `Лонг: ${formatBigNumberBN(shares, 4)} акц. (${formatBigNumberBN(holdingsValBN, 2)} €)`;
+
+                const avgPriceBN = state.avgPrices[selectedAsset] || createBN(0,0);
+                if (shares.m > 0 && avgPriceBN.m > 0) {
+                    const costBasisBN = mulBN(shares, avgPriceBN);
+                    const pnlEuroBN = subBN(holdingsValBN, costBasisBN);
+                    const pnlPercent = (toNumberBN(divBN(pnlEuroBN, costBasisBN))) * 100;
+
+                    const sign = pnlEuroBN.m >= 0 ? '+' : '';
+                    pnlElem.innerText = `PnL: ${sign}${formatBigNumberBN(pnlEuroBN, 2)} € (${sign}${pnlPercent.toFixed(1)}%)`;
+                    pnlElem.className = `pnl-val ${pnlEuroBN.m >= 0 ? 'pnl-up' : 'pnl-down'}`;
+                } else {
+                    pnlElem.innerText = `PnL: 0.00 €`;
+                    pnlElem.className = 'pnl-val';
+                }
+            } else {
+                const shortShares = state.shorts[selectedAsset] || createBN(0,0);
+                const openAvgBN = state.shortAvgPrices[selectedAsset] || createBN(0,0);
+                holdingsElem.innerText = `Шорт: ${formatBigNumberBN(shortShares, 4)} акц. (Входа: ${formatBigNumberBN(openAvgBN, 2)} €)`;
+
+                if (shortShares.m > 0 && openAvgBN.m > 0) {
+                    const initialValBN = mulBN(shortShares, openAvgBN);
+                    const currentValBN = mulBN(shortShares, priceBN);
+                    const pnlEuroBN = subBN(initialValBN, currentValBN);
+                    const pnlPercent = (toNumberBN(divBN(pnlEuroBN, initialValBN))) * 100;
+
+                    const sign = pnlEuroBN.m >= 0 ? '+' : '';
+                    pnlElem.innerText = `PnL: ${sign}${formatBigNumberBN(pnlEuroBN, 2)} € (${sign}${pnlPercent.toFixed(1)}%)`;
+                    pnlElem.className = `pnl-val ${pnlEuroBN.m >= 0 ? 'pnl-up' : 'pnl-down'}`;
+                } else {
+                    pnlElem.innerText = `PnL: 0.00 €`;
+                    pnlElem.className = 'pnl-val';
+                }
+            }
+        }
+
+        function checkLoanStatus() {
+            const banner = document.getElementById('loanBanner');
+            const loanText = document.getElementById('loanText');
+            const loanTakeBtn = document.getElementById('loanTakeBtn');
+            const loanRepayBtn = document.getElementById('loanRepayBtn');
+
+            const currentDebt = state.loanAmount || createBN(0,0);
+            const fiftyBN = createBN(5.0, 1);
+            const hasDebt = currentDebt.m > 0;
+            const isLowBalance = compareBN(state.abs, fiftyBN) < 0;
+
+            if (isLowBalance || hasDebt) {
+                banner.classList.remove('hidden');
+
+                if (!hasDebt) {
+                    loanText.innerText = 'Критический баланс (< 50 €)! Доступен кредит.';
+                    loanTakeBtn.innerText = 'Взять +50 €';
+                    loanTakeBtn.classList.remove('hidden');
+                    loanRepayBtn.classList.add('hidden');
+                } else {
+                    loanText.innerText = `Ваш долг: ${formatBigNumberBN(currentDebt, 2)} €`;
+                    
+                    if (isLowBalance) {
+                        loanTakeBtn.innerText = 'Взять +50 €';
+                        loanTakeBtn.classList.remove('hidden');
+                    } else {
+                        loanTakeBtn.classList.add('hidden');
+                    }
+
+                    if (compareBN(state.abs, currentDebt) >= 0) {
+                        loanRepayBtn.innerText = `Погасить ${formatBigNumberBN(currentDebt, 2)} €`;
+                        loanRepayBtn.style.opacity = '1';
+                        loanRepayBtn.style.pointerEvents = 'auto';
+                        loanRepayBtn.classList.remove('hidden');
+                    } else {
+                        loanRepayBtn.innerText = `Нужно ${formatBigNumberBN(currentDebt, 2)} €`;
+                        loanRepayBtn.style.opacity = '0.5';
+                        loanRepayBtn.style.pointerEvents = 'none';
+                        loanRepayBtn.classList.remove('hidden');
+                    }
+                }
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function takeLoan() {
+            const fiftyBN = createBN(5.0, 1);
+            state.abs = addBN(state.abs, fiftyBN);
+            state.loanAmount = addBN(state.loanAmount || createBN(0,0), fiftyBN);
+            showToast(`Взят займ +50 €. Всего долг: ${formatBigNumberBN(state.loanAmount, 2)} €`);
+            addHistoryRecord('КРЕДИТ', `Получен займ +50.00 €`, `+50.00 €`, createBN(1, 0), state.abs);
+            saveProfile();
+            updateUI();
+        }
+
+        function repayLoan() {
+            const currentDebt = state.loanAmount || createBN(0,0);
+            if (compareBN(state.abs, currentDebt) < 0) {
+                showToast(`Недостаточно средств! Нужно ${formatBigNumberBN(currentDebt, 2)} €`);
+                return;
+            }
+
+            state.abs = subBN(state.abs, currentDebt);
+            state.loanAmount = createBN(0,0);
+            showToast(`Долг успешно погашен!`);
+            addHistoryRecord('ДОЛГ', `Погашен долг ${formatBigNumberBN(currentDebt, 2)} €`, `-${formatBigNumberBN(currentDebt, 2)} €`, createBN(1, 0), state.abs);
+            saveProfile();
+            updateUI();
+        }
+
+        function selectAsset(asset, btn) {
+            selectedAsset = asset;
+            btn.parentElement.querySelectorAll('.btn-asset').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('chartTitle').innerText = `Котировки: ${selectedAsset}`;
+            updateChartTick();
+        }
+
+        function updateSlider(val) {
+            tradePercent = val;
+            document.getElementById('sliderPercent').innerText = val + '%';
+            updateSliderCalculationHint();
+        }
+
+        function setPreset(val) {
+            document.getElementById('tradeSlider').value = val;
+            updateSlider(val);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('tradeToast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN) {
+            if (!Array.isArray(state.history)) state.history = [];
+            
+            const currentAATSec = getAATSecondPrecise();
+            const aatFormattedTime = `${formatAATTimestamp(currentAATSec, true)} AAT`;
+            
+            state.history.unshift({
+                type,
+                desc: textDesc,
+                delta: deltaStr,
+                price: priceBN ? formatBigNumberBN(priceBN, 2) + ' €' : '—',
+                balance: currentBalanceBN,
+                datetime: aatFormattedTime
+            });
+
+            if (state.history.length > MAX_PAGES * ITEMS_PER_PAGE) {
+                state.history.pop();
+            }
+            currentPage = 1;
+            renderHistory();
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.max(1, Math.ceil((state.history ? state.history.length : 0) / ITEMS_PER_PAGE));
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            renderFullHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (!list) return;
+
+            if (!state.history || state.history.length === 0) {
+                list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Сделок пока нет</div>';
+                return;
+            }
+
+            const latestItems = state.history.slice(0, 10);
+            let html = '';
+            latestItems.forEach(item => {
+                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
+                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
+                const isDep = item.type.includes('ДЕПОЗИТ');
+                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
+                const balFormatted = formatBigNumberBN(item.balance, 2);
+                html += `<div class="history-item ${cls}">
+                    <span style="font-size: 0.65rem; color: var(--text-muted);">[${item.datetime}]</span>
+                    <span style="flex: 1; margin-left: 6px; font-size: 0.75rem;"><b>${item.type}</b>: ${item.desc}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
+                    <span style="font-weight: bold; margin-right:6px;">${item.delta || ''}</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function renderFullHistory() {
+            const list = document.getElementById('fullHistoryList');
+            const indicator = document.getElementById('pageIndicator');
+            if(!list || !indicator) return;
+
+            if (!state.history || state.history.length === 0) {
+                list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Сделок пока нет</div>';
+                indicator.innerText = 'Стр. 1 из 1';
+                return;
+            }
+
+            const totalPages = Math.ceil(state.history.length / ITEMS_PER_PAGE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            indicator.innerText = `Стр. ${currentPage} из ${totalPages}`;
+
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const pageItems = state.history.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+            let html = '';
+            pageItems.forEach(item => {
+                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
+                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
+                const isDep = item.type.includes('ДЕПОЗИТ');
+                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
+                const balFormatted = formatBigNumberBN(item.balance, 2);
+                html += `<div class="history-item ${cls}">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">[${item.datetime}]</span>
+                    <span style="flex: 1; margin-left: 8px;"><b>${item.type}</b>: ${item.desc}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
+                    <span style="font-weight: bold; margin-right:8px;">${item.delta || ''}</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        async function renderLeaderboard() {
+            const tbody = document.getElementById('leaderBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            try {
+                const res = await fetch('/api/leaderboard');
+                const allUsersRaw = await res.json();
+                const allUsers = [];
+
+                allUsersRaw.forEach(item => {
+                    const uName = item.username;
+                    const uData = item.data;
+
+                    let capBN = uData.abs || createBN(100, 0);
+                    if (uData.deposits && uData.deposits.EUR) {
+                        capBN = addBN(capBN, uData.deposits.EUR);
+                    }
+                    const curSec = getAATSecondPrecise();
+                    ['AITH','SOFF','BIOM','VOID'].forEach(a => {
+                        const priceBN = getAbsolutePriceAtSecond(curSec, a);
+                        const shares = addBN(uData.assets && uData.assets[a] ? uData.assets[a] : createBN(0,0), uData.deposits && uData.deposits[a] ? uData.deposits[a] : createBN(0,0));
+                        const sharesVal = mulBN(shares, priceBN);
+                        capBN = addBN(capBN, sharesVal);
+
+                        if (uData.shorts && uData.shorts[a]) {
+                            const shortShares = uData.shorts[a];
+                            const openAvgBN = uData.shortAvgPrices[a] || priceBN;
+                            const initialValBN = mulBN(shortShares, openAvgBN);
+                            const currentValBN = mulBN(shortShares, priceBN);
+                            const shortPnlBN = subBN(initialValBN, currentValBN);
+                            capBN = addBN(capBN, shortPnlBN);
+                        }
+                    });
+
+                    allUsers.push({
+                        name: uData.isAnon ? "Анонимный инвестор" : uName,
+                        capBN: capBN
+                    });
+                });
+
+                allUsers.sort((a,b) => compareBN(b.capBN, a.capBN));
+
+                allUsers.forEach((u, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${idx + 1}</td>
+                        <td><b>${u.name}</b></td>
+                        <td style="text-align:right; color:var(--accent-blue);">${formatBigNumberBN(u.capBN, 2)} €</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error('Ошибка загрузки таблицы лидеров:', e);
+            }
+        }
+
+        function executeTrade(action) {
+            const curSec = getAATSecondPrecise();
+            const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
+            const pctFraction = tradePercent / 100;
+            const pctBN = fromNumber(pctFraction);
+
+            if (action === 'BUY_LONG') {
+                if (state.abs.m === 0) return;
+                const spendEuro = mulBN(state.abs, pctBN);
+                if (spendEuro.m === 0) return;
+
+                const boughtShares = divBN(spendEuro, priceBN);
+                const currentShares = state.assets[selectedAsset] || createBN(0,0);
+                const currentAvgBN = state.avgPrices[selectedAsset] || createBN(0,0);
+
+                const newTotalShares = addBN(currentShares, boughtShares);
+                const oldTotalCost = mulBN(currentShares, currentAvgBN);
+                const newTotalCost = addBN(oldTotalCost, spendEuro);
+                const newAvgPriceBN = divBN(newTotalCost, newTotalShares);
+
+                state.assets[selectedAsset] = newTotalShares;
+                state.avgPrices[selectedAsset] = newAvgPriceBN;
+                state.abs = subBN(state.abs, spendEuro);
+
+                showToast(`ЛОНГ: Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedAsset} на ${formatBigNumberBN(spendEuro, 2)} €`);
+                addHistoryRecord('КУПИТЬ', `Купил ${selectedAsset} (${formatBigNumberBN(boughtShares, 4)} шт.)`, `-${formatBigNumberBN(spendEuro, 2)} €`, priceBN, state.abs);
+
+            } else if (action === 'SELL_LONG_PART' || action === 'SELL_LONG_ALL') {
+                const ownedShares = state.assets[selectedAsset] || createBN(0,0);
+
+                if (ownedShares.m === 0) {
+                    showToast(`Нет акций ${selectedAsset} в лонге`);
+                    return;
+                }
+
+                const percent = action === 'SELL_LONG_ALL' ? 100 : tradePercent;
+                let sellShares;
+                if (percent >= 100) {
+                    sellShares = ownedShares;
+                } else {
+                    sellShares = mulBN(ownedShares, fromNumber(percent / 100));
+                }
+
+                if (sellShares.m === 0) return;
+
+                const gainEuro = mulBN(sellShares, priceBN);
+                const avgPriceBN = state.avgPrices[selectedAsset] || priceBN;
+                const costBasisBN = mulBN(sellShares, avgPriceBN);
+                const profitEuroBN = subBN(gainEuro, costBasisBN);
+
+                state.assets[selectedAsset] = subBN(ownedShares, sellShares);
+                state.abs = addBN(state.abs, gainEuro);
+
+                if (state.assets[selectedAsset].m === 0) {
+                    state.assets[selectedAsset] = createBN(0,0);
+                    state.avgPrices[selectedAsset] = createBN(0,0);
+                }
+
+                const profitSign = profitEuroBN.m >= 0 ? '+' : '';
+                showToast(`Продано ${formatBigNumberBN(sellShares, 4)} акц. Выручка: +${formatBigNumberBN(gainEuro, 2)} € (PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`);
+                addHistoryRecord('ПРОДАТЬ', `Продал ${selectedAsset} (${formatBigNumberBN(sellShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `+${formatBigNumberBN(gainEuro, 2)} €`, priceBN, state.abs);
+
+            } else if (action === 'OPEN_SHORT') {
+                if (state.abs.m === 0) return;
+                const marginEuro = mulBN(state.abs, pctBN);
+                if (marginEuro.m === 0) return;
+
+                const shortShares = divBN(marginEuro, priceBN);
+                const curShortShares = state.shorts[selectedAsset] || createBN(0,0);
+                const curShortAvgBN = state.shortAvgPrices[selectedAsset] || createBN(0,0);
+
+                const newShortShares = addBN(curShortShares, shortShares);
+                const oldTotalShortCost = mulBN(curShortShares, curShortAvgBN);
+                const newTotalShortCost = addBN(oldTotalShortCost, marginEuro);
+                const newShortAvgBN = divBN(newTotalShortCost, newShortShares);
+
+                state.shorts[selectedAsset] = newShortShares;
+                state.shortAvgPrices[selectedAsset] = newShortAvgBN;
+
+                showToast(`ШОРТ: Открыта позиция ${formatBigNumberBN(shortShares, 4)} акц. ${selectedAsset} по ${formatBigNumberBN(priceBN, 2)} €`);
+                addHistoryRecord('ОТКРЫТЬ ШОРТ', `Шорт ${selectedAsset} (${formatBigNumberBN(shortShares, 4)} шт.)`, `0.00 €`, priceBN, state.abs);
+
+            } else if (action === 'CLOSE_SHORT_PART' || action === 'CLOSE_SHORT_ALL') {
+                const shortShares = state.shorts[selectedAsset] || createBN(0,0);
+
+                if (shortShares.m === 0) {
+                    showToast(`Нет открытых Шорт-позиций по ${selectedAsset}`);
+                    return;
+                }
+
+                const percent = action === 'CLOSE_SHORT_ALL' ? 100 : tradePercent;
+                let closeShares;
+                if (percent >= 100) {
+                    closeShares = shortShares;
+                } else {
+                    closeShares = mulBN(shortShares, fromNumber(percent / 100));
+                }
+
+                if (closeShares.m === 0) return;
+
+                const openAvgBN = state.shortAvgPrices[selectedAsset] || priceBN;
+                const initialValBN = mulBN(closeShares, openAvgBN);
+                const currentValBN = mulBN(closeShares, priceBN);
+                const profitEuroBN = subBN(initialValBN, currentValBN);
+
+                state.abs = addBN(state.abs, profitEuroBN);
+                if (state.abs.m < 0) state.abs = createBN(0,0);
+
+                state.shorts[selectedAsset] = subBN(shortShares, closeShares);
+                if (state.shorts[selectedAsset].m === 0) {
+                    state.shorts[selectedAsset] = createBN(0,0);
+                    state.shortAvgPrices[selectedAsset] = createBN(0,0);
+                }
+
+                const profitSign = profitEuroBN.m >= 0 ? '+' : '';
+                showToast(`ШОРТ ЗАКРЫТ: ${formatBigNumberBN(closeShares, 4)} акц. PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €`);
+                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт Шорт ${selectedAsset} (${formatBigNumberBN(closeShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €`, priceBN, state.abs);
+            }
+
+            saveProfile();
+            updateUI();
+            updateChartTick();
+        }
+
+        window.onload = () => {
+            initChart();
+            renderTradeButtons();
+            renderDepositButtons();
+            
+            const lastUser = localStorage.getItem('exchange_eur_last_user');
+            const usernameInput = document.getElementById('usernameInput');
+            if (lastUser) {
+                usernameInput.value = lastUser;
+            }
+
+            document.getElementById('authModal').classList.remove('hidden');
+
+            setInterval(updateAATClockFast, 50);
+            setInterval(updateChartTick, 500);
+        };
+
+        async function login() {
+            const input = document.getElementById('usernameInput');
+            const name = input.value.trim();
+            if (!name) return;
+
+            localStorage.setItem('exchange_eur_last_user', name);
+
+            try {
+                const res = await fetch(`/api/user/${encodeURIComponent(name)}`);
+                const result = await res.json();
+
+                if (result.found && result.data && result.data.password) {
+                    const pwdBlock = document.getElementById('pwdAuthBlock');
+                    if (pwdBlock.classList.contains('hidden')) {
+                        pwdBlock.classList.remove('hidden');
+                        showToast("Внимание: этот аккаунт защищен паролем!");
+                        return;
+                    } else {
+                        const pwdInput = document.getElementById('userPwdInput').value;
+                        if (pwdInput !== result.data.password) {
+                            showToast("Неверный пароль!");
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            document.getElementById('authModal').classList.add('hidden');
+            loadProfile(name);
+        }
+
+        async function loadProfile(username) {
+            currentUser = username;
+            document.getElementById('uName').innerText = username;
+            document.getElementById('uAvatar').innerText = username.charAt(0).toUpperCase();
+
+            try {
+                const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
+                const result = await res.json();
+
+                if (result.found && result.data) {
+                    state = result.data;
+                } else {
+                    resetDefaultState();
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки:', e);
+                resetDefaultState();
+            }
+
+            if (!state.abs) state.abs = { m: 1.0, e: 2 };
+            if (!state.assets) state.assets = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
+            if (!state.avgPrices) state.avgPrices = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
+            if (!state.shorts) state.shorts = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
+            if (!state.shortAvgPrices) state.shortAvgPrices = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
+            if (!state.deposits) state.deposits = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} };
+            if (!state.deposits.EUR) state.deposits.EUR = {m:0,e:0};
+            if (!state.deposits.VOID) state.deposits.VOID = {m:0,e:0};
+            if (!state.lastDepTime) state.lastDepTime = Date.now();
+            if (!state.loanAmount) state.loanAmount = {m:0,e:0};
+            if (!Array.isArray(state.history)) state.history = [];
+
+            updateUI();
+            updateChartTick();
+            renderHistory();
+        }
+
+        function resetDefaultState() {
+            state = {
+                abs: { m: 1.0, e: 2 },
+                assets: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+                avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+                shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+                shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+                deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
+                lastDepTime: Date.now(),
+                loanAmount: { m: 0, e: 0 },
+                password: "",
+                isAnon: false,
+                history: []
+            };
+        }
+
+        async function saveProfile() {
+            if (currentUser) {
+                try {
+                    await fetch(`/api/user/${encodeURIComponent(currentUser)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
+                } catch (e) {
+                    console.error('Ошибка сохранения:', e);
+                }
+            }
+        }
+
+        function switchUser() {
+            saveProfile();
+            document.getElementById('userPwdInput').value = '';
+            document.getElementById('pwdAuthBlock').classList.add('hidden');
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function openSettings() {
+            document.getElementById('setPwdInput').value = state.password || '';
+            document.getElementById('setAnonSelect').value = state.isAnon ? 'anon' : 'public';
+            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('userDropdown').classList.remove('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            state.password = document.getElementById('setPwdInput').value;
+            state.isAnon = document.getElementById('setAnonSelect').value === 'anon';
+            saveProfile();
+            closeSettings();
+            showToast("Настройки профиля сохранены");
+        }
+
+        function updateUI() {
+            const absElem = document.getElementById('absDisplay');
+            absElem.innerText = formatBigNumberBN(state.abs, 2) + ' €';
+
+            checkLoanStatus();
+            updateDepositUI();
+            updateBalanceGridAssets();
+            updateCapitalizationDisplay();
+            renderHistory();
+        }
+    </script>
+</body>
+</html>

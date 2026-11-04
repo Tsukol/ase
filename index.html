@@ -32,11 +32,11 @@
         .dropdown-menu {
             position: absolute;
             top: calc(100% + 8px);
-            right: 0;
+            left: 0; /* Изменено с right: 0, чтобы меню открывалось вправо и не обрезалось на мобильных */
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            width: 220px;
+            width: 230px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
             display: none;
             flex-direction: column;
@@ -184,7 +184,7 @@
 </head>
 <body>
 
-    <div id="authModal" class="modal-overlay">
+    <div id="authModal" class="modal-overlay hidden">
         <div class="modal">
             <h3 style="text-align: center; margin-bottom: 8px;">Вход на биржу (ASE)</h3>
             <form onsubmit="event.preventDefault(); login();">
@@ -398,7 +398,7 @@
         <div id="newsTab" class="tab-content hidden">
             <div class="news-card">
                 <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка ASE</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Актуальные и прошедшие новости, влияющие на курс акций в AAT (последние 100).</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Новости выходят строго в 12:00 каждого третьего игрового дня (последние 100).</div>
                 <div class="news-list" id="newsListContainer"></div>
             </div>
         </div>
@@ -705,16 +705,15 @@
             ]
         };
 
+        // Новости выходят строго в 12:00 каждого третьего игрового дня (Day % 3 === 0)
         function getNewsExactTime(blockIndex) {
-            const newsIntervalSec = 172800;
-            const baseTime = blockIndex * newsIntervalSec;
-            const timeOffset = Math.floor(getSeedRandom(blockIndex + NEWS_SEED_OFFSET + 555) * 151200) + 7200;
-            return baseTime + timeOffset;
+            const dayIndex = blockIndex * 3 + 3; // Каждый 3-й день (3, 6, 9...)
+            return (dayIndex * 86400) + 43200; // 43200 секунд = ровно 12:00:00
         }
 
         function getNewsMultiplierAtSecond(targetAATSecond, asset) {
-            const newsIntervalSec = 172800;
-            const currentBlock = Math.floor(targetAATSecond / newsIntervalSec);
+            const currentDay = Math.floor(targetAATSecond / 86400);
+            const currentBlock = Math.floor((currentDay - 1) / 3);
             let accumulatedMult = 1.0;
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
 
@@ -748,8 +747,8 @@
 
         function getActiveNewsHistory() {
             const currentAAT = getAATSecondPrecise();
-            const newsIntervalSec = 172800;
-            const currentBlock = Math.floor(currentAAT / newsIntervalSec);
+            const currentDay = Math.floor(currentAAT / 86400);
+            const currentBlock = Math.floor((currentDay - 1) / 3);
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
             const history = [];
 
@@ -1080,7 +1079,7 @@
                     return;
                 }
 
-                state.assets[selectedDepAsset] = addBN(state.assets[selectedAsset] || createBN(0,0), depVal);
+                state.assets[selectedAsset] = addBN(state.assets[selectedAsset] || createBN(0,0), depVal);
                 state.deposits[selectedDepAsset] = createBN(0,0);
 
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
@@ -1696,9 +1695,10 @@
 
                 state.shorts[selectedAsset] = newShortShares;
                 state.shortAvgPrices[selectedAsset] = newShortAvgBN;
+                state.abs = subBN(state.abs, marginEuro); // Списание маржи
 
                 showToast(`ШОРТ: Открыта позиция ${formatBigNumberBN(shortShares, 4)} акц. ${selectedAsset} по ${formatBigNumberBN(priceBN, 2)} €`);
-                addHistoryRecord('ОТКРЫТЬ ШОРТ', `Шорт ${selectedAsset} (${formatBigNumberBN(shortShares, 4)} шт.)`, `0.00 €`, priceBN, state.abs);
+                addHistoryRecord('ОТКРЫТЬ ШОРТ', `Шорт ${selectedAsset} (${formatBigNumberBN(shortShares, 4)} шт.)`, `-${formatBigNumberBN(marginEuro, 2)} €`, priceBN, state.abs);
 
             } else if (action === 'CLOSE_SHORT_PART' || action === 'CLOSE_SHORT_ALL') {
                 const shortShares = state.shorts[selectedAsset] || createBN(0,0);
@@ -1723,7 +1723,9 @@
                 const currentValBN = mulBN(closeShares, priceBN);
                 const profitEuroBN = subBN(initialValBN, currentValBN);
 
-                state.abs = addBN(state.abs, profitEuroBN);
+                // Возврат маржи + PnL
+                const returnEuro = addBN(initialValBN, profitEuroBN);
+                state.abs = addBN(state.abs, returnEuro);
                 if (state.abs.m < 0) state.abs = createBN(0,0);
 
                 state.shorts[selectedAsset] = subBN(shortShares, closeShares);
@@ -1734,7 +1736,7 @@
 
                 const profitSign = profitEuroBN.m >= 0 ? '+' : '';
                 showToast(`ШОРТ ЗАКРЫТ: ${formatBigNumberBN(closeShares, 4)} акц. PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €`);
-                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт Шорт ${selectedAsset} (${formatBigNumberBN(closeShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €`, priceBN, state.abs);
+                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт Шорт ${selectedAsset} (${formatBigNumberBN(closeShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `+${formatBigNumberBN(returnEuro, 2)} €`, priceBN, state.abs);
             }
 
             saveProfile();
@@ -1742,29 +1744,35 @@
             updateChartTick();
         }
 
-        window.onload = () => {
+        window.onload = async () => {
             initChart();
             renderTradeButtons();
             renderDepositButtons();
             
-            const lastUser = localStorage.getItem('exchange_eur_last_user');
-            const usernameInput = document.getElementById('usernameInput');
-            if (lastUser) {
-                usernameInput.value = lastUser;
-            }
-
-            document.getElementById('authModal').classList.remove('hidden');
-
             setInterval(updateAATClockFast, 50);
             setInterval(updateChartTick, 500);
+
+            // Автологин последнего сохраненного профиля без запроса пароля при перезагрузке
+            const lastUser = localStorage.getItem('exchange_eur_last_user');
+            if (lastUser) {
+                try {
+                    const res = await fetch(`/api/user/${encodeURIComponent(lastUser)}`);
+                    const result = await res.json();
+                    if (result.found) {
+                        loadProfile(lastUser);
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            // Если сессии нет — показываем окно входа
+            document.getElementById('authModal').classList.remove('hidden');
         };
 
         async function login() {
             const input = document.getElementById('usernameInput');
             const name = input.value.trim();
             if (!name) return;
-
-            localStorage.setItem('exchange_eur_last_user', name);
 
             try {
                 const res = await fetch(`/api/user/${encodeURIComponent(name)}`);
@@ -1786,6 +1794,7 @@
                 }
             } catch (e) {}
 
+            localStorage.setItem('exchange_eur_last_user', name);
             document.getElementById('authModal').classList.add('hidden');
             loadProfile(name);
         }
@@ -1858,6 +1867,8 @@
 
         function switchUser() {
             saveProfile();
+            localStorage.removeItem('exchange_eur_last_user');
+            currentUser = null;
             document.getElementById('userPwdInput').value = '';
             document.getElementById('pwdAuthBlock').classList.add('hidden');
             document.getElementById('authModal').classList.remove('hidden');

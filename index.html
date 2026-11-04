@@ -1903,6 +1903,59 @@
             updateCapitalizationDisplay();
             renderHistory();
         }
+
+// --- БЛОК СИНХРОНИЗАЦИИ ДЛЯ УСТРАНЕНИЯ РАССИНХРОНА ---
+
+let isUserBusy = false; // Флаг, чтобы не дергать интерфейс во время ввода
+
+// 1. Функция получения свежих данных с сервера
+async function syncWithServer() {
+    if (!state.username || state.isAnon || isUserBusy) return;
+    try {
+        const response = await fetch(`/api/user/${encodeURIComponent(state.username)}`);
+        if (response.ok) {
+            const serverData = await response.json();
+            if (serverData && serverData.data) {
+                const parsed = typeof serverData.data === 'string' ? JSON.parse(serverData.data) : serverData.data;
+                const currentPwd = state.password;
+                Object.assign(state, parsed);
+                state.password = currentPwd;
+                if (typeof updateUI === 'function') updateUI();
+            }
+        }
+    } catch (e) {
+        console.error("Ошибка синхронизации:", e);
+    }
+}
+
+// 2. Автоматический опрос сервера каждые 1.5 секунды
+setInterval(() => {
+    syncWithServer();
+}, 1500);
+
+// 3. Мгновенная синхронизация при возвращении на вкладку
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        syncWithServer();
+    }
+});
+
+// 4. Синхронизация перед важными действиями + защита от сброса инпутов
+['executeTrade', 'openShort', 'closeShort', 'makeDeposit', 'withdrawDeposit'].forEach(funcName => {
+    if (window[funcName] && typeof window[funcName] === 'function') {
+        const originalFunc = window[funcName];
+        window[funcName] = async function(...args) {
+            isUserBusy = true;
+            await syncWithServer();
+            try {
+                return await originalFunc.apply(this, args);
+            } finally {
+                isUserBusy = false;
+            }
+        };
+    }
+});
+
     </script>
 </body>
 </html>

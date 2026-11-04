@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ainalandia Stock Exchange (ASE)</title>
+    <title>Ainalandia Stock Exchange (ASE) v1.2.4</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -32,7 +32,7 @@
         .dropdown-menu {
             position: absolute;
             top: calc(100% + 8px);
-            left: 0; /* Изменено с right: 0, чтобы меню открывалось вправо и не обрезалось на мобильных */
+            left: 0;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
@@ -59,8 +59,8 @@
 
         .aat-clock { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 0.85rem; font-family: monospace; color: #d8b4fe; font-weight: bold; }
 
-        .nav-tabs { display: flex; gap: 6px; background: var(--card-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .nav-tab { flex: 1; padding: 10px 4px; text-align: center; background: transparent; border: none; color: var(--text-muted); font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
+        .nav-tabs { display: flex; gap: 4px; background: var(--card-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .nav-tab { flex: 1; padding: 10px 2px; text-align: center; background: transparent; border: none; color: var(--text-muted); font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 0.72rem; transition: all 0.2s; }
         .nav-tab.active { background: rgba(0,242,254,0.1); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
 
         .tab-content { display: flex; flex-direction: column; gap: 14px; }
@@ -70,13 +70,10 @@
         .abs-val { font-size: 2rem; font-weight: 800; color: #fff; font-family: monospace; }
         .capitalization-row { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; margin-top: -4px; margin-bottom: 4px; }
         .capitalization-val { color: var(--accent-blue); font-weight: bold; }
-        
-        .loan-banner { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-yellow); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
-        .loan-banner.hidden { display: none; }
-        .loan-row { display: flex; justify-content: space-between; align-items: center; }
-        .loan-actions { display: flex; gap: 6px; }
-        .btn-loan { background: var(--accent-yellow); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
-        .btn-loan-repay { background: var(--accent-green); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.75rem; }
+
+        .bonus-banner { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-green); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        .btn-claim-bonus { background: var(--accent-green); color: #000; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .btn-claim-bonus:hover { opacity: 0.9; }
 
         .assets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 4px; }
         .asset-box { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px; text-align: left; display: flex; flex-direction: column; gap: 4px; }
@@ -88,7 +85,7 @@
         .pnl-mini-down { color: var(--accent-red); font-weight: bold; }
 
         .chart-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; }
-        .chart-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .chart-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
         .chart-wrapper { position: relative; height: 200px; width: 100%; }
 
         .trade-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; position: relative; }
@@ -128,22 +125,26 @@
         .btn-sell-all { background: var(--accent-red); color: #fff; }
         .btn-action:active { opacity: 0.8; }
 
-        .deposit-card { background: var(--card-bg); border: 1px solid var(--accent-purple); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .deposit-header { display: flex; justify-content: space-between; align-items: center; }
-        .deposit-title { font-size: 0.9rem; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
-        .deposit-info { font-size: 0.75rem; color: var(--text-muted); }
+        .deposit-card, .loan-card { background: var(--card-bg); border: 1px solid var(--accent-purple); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .loan-card { border-color: var(--accent-yellow); }
+        .deposit-header, .loan-header { display: flex; justify-content: space-between; align-items: center; }
+        .deposit-title { font-size: 0.9rem; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; }
+        .loan-title { font-size: 0.9rem; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; }
+        .deposit-info, .loan-info { font-size: 0.75rem; color: var(--text-muted); }
         
-        .deposit-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .dep-stat-item { display: flex; flex-direction: column; }
-        .dep-stat-label { font-size: 0.7rem; color: var(--text-muted); }
-        .dep-stat-val { font-size: 0.95rem; font-weight: 700; font-family: monospace; }
+        .deposit-stats, .loan-stats { display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .dep-stat-item, .loan-stat-item { display: flex; flex-direction: column; }
+        .dep-stat-label, .loan-stat-label { font-size: 0.7rem; color: var(--text-muted); }
+        .dep-stat-val, .loan-stat-val { font-size: 0.95rem; font-weight: 700; font-family: monospace; }
 
-        .deposit-controls { display: flex; flex-direction: column; gap: 8px; }
-        .deposit-btns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .deposit-controls, .loan-controls { display: flex; flex-direction: column; gap: 8px; }
+        .deposit-btns-grid, .loan-btns-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .btn-dep { background: var(--accent-purple); color: #fff; border: none; border-radius: 8px; padding: 10px; font-weight: 700; cursor: pointer; font-size: 0.75rem; }
         .btn-dep-eur { background: var(--accent-blue); color: #000; }
         .btn-dep-out { background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red); color: var(--accent-red); }
-        .btn-dep:active { opacity: 0.8; }
+
+        .btn-loan-take { background: var(--accent-yellow); color: #000; border: none; border-radius: 8px; padding: 12px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .btn-loan-repay { background: var(--accent-green); color: #000; border: none; border-radius: 8px; padding: 12px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
 
         .news-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
         .news-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; }
@@ -167,11 +168,13 @@
         .history-item.sell { border-left: 3px solid var(--accent-red); }
         .history-item.short { border-left: 3px solid var(--accent-yellow); }
         .history-item.dep { border-left: 3px solid var(--accent-purple); }
+        .history-item.loan { border-left: 3px solid var(--accent-yellow); }
 
         .leader-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
         .leader-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .leader-table th { text-align: left; padding: 8px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-size: 0.75rem; }
         .leader-table td { padding: 8px; border-bottom: 1px solid rgba(42,55,84,0.5); font-family: monospace; }
+        .activity-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted); }
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #151d30; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--accent-blue); opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap; }
         .toast.show { opacity: 1; top: 30px; }
@@ -233,7 +236,7 @@
                     <div class="dropdown-item" onclick="switchUser()">🚪 Сменить профиль</div>
                 </div>
             </div>
-            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL</div>
+            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.2.4</div>
         </div>
 
         <div class="aat-clock" id="aatClockDisplay">Время по AAT: Загрузка...</div>
@@ -243,14 +246,9 @@
             <div class="abs-val" id="absDisplay">0.00 €</div>
             <div class="capitalization-row">Капитализация: <span id="capitalizationDisplay" class="capitalization-val">0.00 €</span></div>
             
-            <div id="loanBanner" class="loan-banner hidden">
-                <div class="loan-row">
-                    <span id="loanText">Баланс ниже 50 €! Доступен кредит.</span>
-                    <div class="loan-actions">
-                        <button id="loanTakeBtn" class="btn-loan" onclick="takeLoan()">Взять 50 €</button>
-                        <button id="loanRepayBtn" class="btn-loan-repay" onclick="repayLoan()">Погасить долг</button>
-                    </div>
-                </div>
+            <div id="bonusBanner" class="bonus-banner hidden">
+                <span>🎁 Вам доступен стартовый капитал!</span>
+                <button class="btn-claim-bonus" onclick="claimStarterBonus()">Забрать 100 €</button>
             </div>
 
             <div class="assets-grid">
@@ -278,9 +276,10 @@
         </div>
 
         <div class="nav-tabs">
-            <button id="tabBtn-tradeTab" class="nav-tab active" onclick="switchTab('tradeTab')">📊 Главная страница</button>
+            <button id="tabBtn-tradeTab" class="nav-tab active" onclick="switchTab('tradeTab')">📊 Главная</button>
             <button id="tabBtn-depositTab" class="nav-tab" onclick="switchTab('depositTab')">🏛 Депозитарий</button>
-            <button id="tabBtn-newsTab" class="nav-tab" onclick="switchTab('newsTab')">📰 Новости ASE</button>
+            <button id="tabBtn-loanTab" class="nav-tab" onclick="switchTab('loanTab')">💳 Кредит</button>
+            <button id="tabBtn-newsTab" class="nav-tab" onclick="switchTab('newsTab')">📰 Новости</button>
         </div>
 
         <!-- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА -->
@@ -288,6 +287,7 @@
             <div class="chart-card">
                 <div class="chart-controls">
                     <span style="font-size: 0.85rem; font-weight: 600;" id="chartTitle">Котировки: AITH</span>
+                    <div style="font-size: 0.75rem; color: var(--accent-blue); background: rgba(0,242,254,0.1); padding: 4px 10px; border-radius: 6px; font-weight: bold;">📈 1Ч (Линия)</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="marketChart"></canvas>
@@ -351,7 +351,7 @@
             <div class="deposit-card">
                 <div class="deposit-header">
                     <div class="deposit-title">🏛 Депозитарий ценных бумаг и валюты</div>
-                    <div class="deposit-info">Доходность: 7.5% (акции) / 2.5% (€) / 17.5% (VOID) в мес.</div>
+                    <div class="deposit-info">Доходность: 8% (акции) / 3% (€) / 16% (VOID) в мес.</div>
                 </div>
 
                 <div class="selector-row">
@@ -394,7 +394,50 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 3: НОВОСТИ ASE -->
+        <!-- ВКЛАДКА 3: КРЕДИТЫ -->
+        <div id="loanTab" class="tab-content hidden">
+            <div class="loan-card">
+                <div class="loan-header">
+                    <div class="loan-title">💳 Кредитный терминал ASE</div>
+                    <div class="loan-info">Комиссия: +10% разово (без тиков по времени)</div>
+                </div>
+
+                <div class="loan-stats">
+                    <div class="loan-stat-item">
+                        <span class="loan-stat-label">Взято в этом мес. / Лимит</span>
+                        <span class="loan-stat-val" id="loanMonthDisplay">0 / 10 000 €</span>
+                    </div>
+                    <div class="loan-stat-item" style="text-align: right;">
+                        <span class="loan-stat-label">Текущий долг к возврату</span>
+                        <span class="loan-stat-val" id="loanDebtDisplay" style="color: var(--accent-red);">0.00 €</span>
+                    </div>
+                </div>
+
+                <div class="slider-section">
+                    <div class="slider-header">
+                        <span>Доля от доступного лимита</span>
+                        <span id="loanSliderPercent" style="font-weight: bold; color: var(--accent-yellow);">100%</span>
+                    </div>
+                    <input type="range" id="loanSlider" min="1" max="100" value="100" oninput="updateLoanSlider(this.value)">
+                    <div class="trade-calc-hint" id="loanCalcHint" style="color: var(--accent-yellow); background: rgba(245, 158, 11, 0.08);">Расчет займа...</div>
+                    <div class="presets-grid">
+                        <button class="btn-preset" onclick="setLoanPreset(25)">25%</button>
+                        <button class="btn-preset" onclick="setLoanPreset(50)">50%</button>
+                        <button class="btn-preset" onclick="setLoanPreset(75)">75%</button>
+                        <button class="btn-preset" onclick="setLoanPreset(100)">MAX</button>
+                    </div>
+                </div>
+
+                <div class="loan-controls">
+                    <div class="loan-btns-grid">
+                        <button class="btn-loan-take" onclick="takeLoanBySlider()">ВЗЯТЬ КРЕДИТ</button>
+                        <button class="btn-loan-repay" onclick="repayLoanAction()">ПОГАСИТЬ ДОЛГ (€)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 4: НОВОСТИ ASE -->
         <div id="newsTab" class="tab-content hidden">
             <div class="news-card">
                 <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка ASE</div>
@@ -403,7 +446,7 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 4: ИСТОРИЯ (ПОЛНАЯ) -->
+        <!-- ВКЛАДКА 5: ИСТОРИЯ (ПОЛНАЯ) -->
         <div id="historyTab" class="tab-content hidden">
             <div class="history-card">
                 <div class="history-header-row">
@@ -418,7 +461,7 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 5: СПИСОК ЛУЧШИХ ТРЕЙДЕРОВ -->
+        <!-- ВКЛАДКА 6: СПИСОК ЛУЧШИХ ТРЕЙДЕРОВ -->
         <div id="leaderTab" class="tab-content hidden">
             <div class="leader-card">
                 <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🏆 Список лучших трейдеров</div>
@@ -445,18 +488,34 @@
         let tradeMode = 'LONG';
         let tradePercent = 100;
         let depPercent = 100;
+        let loanPercent = 100;
         let chartInstance = null;
-        const TICKS_COUNT = 120;
-        const TICK_INTERVAL_SECONDS = 12;
         
-        let currentPage = 1;
+        const TICK_INTERVAL_SECONDS = 12;
         const ITEMS_PER_PAGE = 25;
         const MAX_PAGES = 100;
+        let currentPage = 1;
 
-        const REAL_BASE_UNIX = 1793491200;
+        let serverTimeOffset = 0;
+        let REAL_BASE_UNIX = 1793491200;
         const AAT_BASE_TIMESTAMP = 0;
         const AAT_SPEED_MULTIPLIER = 24;
         const NEWS_SEED_OFFSET = 884920111;
+        const SECONDS_IN_MONTH = 2592000;
+
+        async function syncServerTime() {
+            try {
+                const start = performance.now();
+                const res = await fetch('/api/time');
+                const data = await res.json();
+                const latency = (performance.now() - start) / 2000;
+                
+                if (data.time) serverTimeOffset = (data.time - (Date.now() / 1000)) - latency;
+                if (data.baseUnix) REAL_BASE_UNIX = data.baseUnix;
+            } catch (e) {
+                console.warn('Сервер времени недоступен, фолбэк на локальное время.');
+            }
+        }
 
         function createBN(m = 0, e = 0) {
             let num = { m: Number(m) || 0, e: Number(e) || 0 };
@@ -464,19 +523,11 @@
         }
 
         function normalizeBN(val) {
-            if (!val || isNaN(val.m) || val.m === 0) {
-                return { m: 0, e: 0 };
-            }
+            if (!val || isNaN(val.m) || val.m === 0) return { m: 0, e: 0 };
             let m = val.m;
             let e = val.e;
-            while (Math.abs(m) >= 10) {
-                m /= 10;
-                e += 1;
-            }
-            while (Math.abs(m) < 1 && m !== 0) {
-                m *= 10;
-                e -= 1;
-            }
+            while (Math.abs(m) >= 10) { m /= 10; e += 1; }
+            while (Math.abs(m) < 1 && m !== 0) { m *= 10; e -= 1; }
             m = Math.round(m * 1e10) / 1e10;
             if (m === 0) return { m: 0, e: 0 };
             return { m, e };
@@ -504,19 +555,16 @@
             if (na.e >= nb.e) {
                 let diff = na.e - nb.e;
                 if (diff > 308) return na;
-                let sumM = na.m + nb.m / Math.pow(10, diff);
-                return normalizeBN({ m: sumM, e: na.e });
+                return normalizeBN({ m: na.m + nb.m / Math.pow(10, diff), e: na.e });
             } else {
                 let diff = nb.e - na.e;
                 if (diff > 308) return nb;
-                let sumM = nb.m + na.m / Math.pow(10, diff);
-                return normalizeBN({ m: sumM, e: nb.e });
+                return normalizeBN({ m: nb.m + na.m / Math.pow(10, diff), e: nb.e });
             }
         }
 
         function subBN(a, b) {
-            let nb = { m: -b.m, e: b.e };
-            return addBN(a, nb);
+            return addBN(a, { m: -b.m, e: b.e });
         }
 
         function mulBN(a, b) {
@@ -547,18 +595,12 @@
         function formatBigNumberBN(val, decimals = 2) {
             let norm = normalizeBN(val);
             if (!norm || isNaN(norm.m) || norm.m === 0) return '0.00';
-            
             let valNum = toNumberBN(norm);
             if (isNaN(valNum)) return '∞';
             if (norm.m < 0) return '-' + formatBigNumberBN({ m: -norm.m, e: norm.e }, decimals);
 
-            if (norm.e < -3) {
-                return (norm.m).toFixed(decimals) + 'e' + norm.e;
-            }
-
-            if (norm.e < 6) {
-                return valNum.toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-            }
+            if (norm.e < -3) return (norm.m).toFixed(decimals) + 'e' + norm.e;
+            if (norm.e < 6) return valNum.toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
             const baseSuffixes = ["m", "b", "t"];
             const exp = norm.e;
@@ -570,41 +612,28 @@
             }
 
             let remaining = tier - baseSuffixes.length;
-            let suffix = "";
-            let length = 2;
-
+            let suffix = "", length = 2;
             while (true) {
                 let count = Math.pow(26, length);
                 if (remaining < count) break;
                 remaining -= count;
                 length++;
             }
-
             for (let i = length - 1; i >= 0; i--) {
                 let charIndex = Math.floor(remaining / Math.pow(26, i)) % 26;
                 suffix += String.fromCharCode(97 + charIndex);
             }
-
             const baseVal = norm.m * Math.pow(10, (exp - 6) % 3);
             return baseVal.toFixed(3) + suffix;
         }
 
-        function isLeapYear(year) {
-            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-        }
-
-        function getDaysInMonth(year, month) {
-            const daysInMonths = [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            return daysInMonths[month - 1];
-        }
-
-        function getDaysInYear(year) {
-            return isLeapYear(year) ? 366 : 365;
-        }
+        function isLeapYear(year) { return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0); }
+        function getDaysInMonth(year, month) { return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]; }
+        function getDaysInYear(year) { return isLeapYear(year) ? 366 : 365; }
 
         function getAATSecondPrecise() {
-            const currentRealUnixPrecise = Date.now() / 1000;
-            const elapsedRealSeconds = currentRealUnixPrecise - REAL_BASE_UNIX;
+            const currentServerUnixPrecise = (Date.now() / 1000) + serverTimeOffset;
+            const elapsedRealSeconds = currentServerUnixPrecise - REAL_BASE_UNIX;
             return AAT_BASE_TIMESTAMP + (elapsedRealSeconds * AAT_SPEED_MULTIPLIER);
         }
 
@@ -620,44 +649,30 @@
             let year = 2466;
             while (true) {
                 let dInYear = getDaysInYear(year);
-                if (totalDays >= dInYear) {
-                    totalDays -= dInYear;
-                    year++;
-                } else {
-                    break;
-                }
+                if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
             }
 
             let month = 1;
             while (month <= 12) {
                 let dInMonth = getDaysInMonth(year, month);
-                if (totalDays >= dInMonth) {
-                    totalDays -= dInMonth;
-                    month++;
-                } else {
-                    break;
-                }
+                if (totalDays >= dInMonth) { totalDays -= dInMonth; month++; } else break;
             }
 
             let day = totalDays + 1;
-            let dayStr = String(day).padStart(2, '0');
-            let monthStr = String(month).padStart(2, '0');
-
             let timePart = includeSeconds ? `${hours}:${mins}:${secs}` : `${hours}:${mins}`;
-            return `${year}.${monthStr}.${dayStr} ${timePart}`;
+            return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')} ${timePart}`;
         }
 
         const assetConfigs = {
-            AITH: { basePrice: 25.0, vol: 0.012, color: '#00f2fe', seedOffset: 101 },
-            SOFF: { basePrice: 65.0, vol: 0.018, color: '#10b981', seedOffset: 202 },
-            BIOM: { basePrice: 95.0, vol: 0.028, color: '#ef4444', seedOffset: 303 },
-            VOID: { basePrice: 150.0, vol: 0.068, color: '#8b5cf6', seedOffset: 404 }
+            AITH: { basePrice: 25.0, vol: 0.006, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
+            SOFF: { basePrice: 75.0, vol: 0.012, color: '#10b981', seedOffset: 202, timeScale: 0.98 },
+            BIOM: { basePrice: 125.0, vol: 0.018, color: '#ef4444', seedOffset: 303, timeScale: 0.96 },
+            VOID: { basePrice: 275.0, vol: 0.030, color: '#8b5cf6', seedOffset: 404, timeScale: 0.94 }
         };
 
-        const SECONDS_IN_MONTH = 2592000;
-        const SHARE_DEP_RATE = Math.pow(1.075, 1 / SECONDS_IN_MONTH);
-        const VOID_DEP_RATE = Math.pow(1.175, 1 / SECONDS_IN_MONTH);
-        const EUR_DEP_RATE = Math.pow(1.025, 1 / SECONDS_IN_MONTH);
+        const SHARE_DEP_RATE = Math.pow(1.08, 1 / SECONDS_IN_MONTH);
+        const VOID_DEP_RATE = Math.pow(1.16, 1 / SECONDS_IN_MONTH);
+        const EUR_DEP_RATE = Math.pow(1.03, 1 / SECONDS_IN_MONTH);
 
         let state = {
             abs: { m: 1.0, e: 2 },
@@ -665,55 +680,49 @@
             avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shortMargins: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
             lastDepTime: Date.now(),
-            loanAmount: { m: 0, e: 0 },
+            hasTakenLoan: false,
+            loanDebtBN: { m: 0, e: 0 },
+            loanTakenMonthBN: { m: 0, e: 0 },
+            lastLoanMonthReset: 0,
+            maxCapitalLast4Months: { m: 0, e: 0 },
             password: "",
             isAnon: false,
             history: []
         };
 
         function getSeedRandom(seed) {
-            const x = Math.sin(seed * 99.12345) * 10000;
-            return x - Math.floor(x);
+            let t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
         }
 
         const newsTemplates = {
             AITH: [
-                { type: 'PUMP', text: 'AinaTech патентует квантовый чип нового поколения!', mult: 3.2 },
-                { type: 'DUMP', text: 'Кибератака на дата-центры AinaTech приостановила торги.', mult: 0.38 },
-                { type: 'PUMP', text: 'Городской совет передал стратегический контракт на цифровизацию в руки AinaTech!', mult: 3.8 },
-                { type: 'DUMP', text: 'Утечка закрытых протоколов безопасности из лабораторий AinaTech.', mult: 0.42 }
+                { type: 'PUMP', text: 'AinaTech заключила крупный контракт на поставку квантовых процессоров.', mult: 4.0 },
+                { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций AinaTech.', mult: 0.70 }
             ],
             SOFF: [
-                { type: 'PUMP', text: 'SvetOFF успешно запустила экспериментальный термоядерный реактор!', mult: 3.5 },
-                { type: 'DUMP', text: 'Авария на главной подстанции SvetOFF оставила ключевые районы без света.', mult: 0.35 },
-                { type: 'PUMP', text: 'SvetOFF презентовала сеть беспроводной передачи энергии.', mult: 3.0 },
-                { type: 'DUMP', text: 'Энергетические штрафы регуляторов за сбои в сетях SvetOFF.', mult: 0.40 }
+                { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 6.0 },
+                { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.50 }
             ],
             BIOM: [
-                { type: 'PUMP', text: 'BioMusor нашла способ синтеза чистого золота из вторичного сырья!', mult: 4.5 },
-                { type: 'DUMP', text: 'Экологический пикет у главного терминала BioMusor спровоцировал панику.', mult: 0.25 },
-                { type: 'PUMP', text: 'BioMusor подписала договор с космодромом на утилизацию мусора на орбите.', mult: 3.8 },
-                { type: 'DUMP', text: 'Технологический сбой на перерабатывающих комплексах BioMusor.', mult: 0.30 }
+                { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 8.0 },
+                { type: 'DUMP', text: 'Приостановлена лицензия BioMusor.', mult: 0.35 }
             ],
             VOID: [
-                { type: 'PUMP', text: 'Void Energy свернула пространство-время и извлекла бесконечную энергию из вакуума!', mult: 10.0 },
-                { type: 'DUMP', text: 'Черная дыра в лаборатории Void Energy поглотила три корпуса и инвесторов!', mult: 0.10 },
-                { type: 'PUMP', text: 'Void Energy объявила об открытии портала в параллельную экономику.', mult: 8.5 },
-                { type: 'DUMP', text: 'Критический коллапс квантовых стабилизаторов Void Energy.', mult: 0.15 }
+                { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 20.0 },
+                { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.20 }
             ]
         };
 
-        // Новости выходят строго в 12:00 каждого третьего игрового дня (Day % 3 === 0)
-        function getNewsExactTime(blockIndex) {
-            const dayIndex = blockIndex * 3 + 3; // Каждый 3-й день (3, 6, 9...)
-            return (dayIndex * 86400) + 43200; // 43200 секунд = ровно 12:00:00
-        }
+        function getNewsExactTime(blockIndex) { return (blockIndex * 3 + 3) * 86400 + 43200; }
 
         function getNewsMultiplierAtSecond(targetAATSecond, asset) {
-            const currentDay = Math.floor(targetAATSecond / 86400);
-            const currentBlock = Math.floor((currentDay - 1) / 3);
+            const currentBlock = Math.floor((Math.floor(targetAATSecond / 86400) - 1) / 3);
             let accumulatedMult = 1.0;
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
 
@@ -721,23 +730,16 @@
                 const exactNewsTime = getNewsExactTime(b);
                 if (exactNewsTime > targetAATSecond) continue;
 
-                const rndAssetIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length);
-                const targetedAsset = assetsArr[rndAssetIdx];
-                
+                const targetedAsset = assetsArr[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length)];
                 if (targetedAsset === asset) {
                     const templates = newsTemplates[asset];
-                    const rndTplIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length);
-                    const tpl = templates[rndTplIdx];
+                    const tpl = templates[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length)];
+                    const elapsed = targetAATSecond - exactNewsTime;
+                    const floorLevel = tpl.type === 'PUMP' ? 1.16 : 0.89;
 
-                    const elapsedSinceNews = targetAATSecond - exactNewsTime;
-                    const isPump = tpl.type === 'PUMP';
-                    const floorLevel = isPump ? 1.13 : 0.93;
-
-                    if (elapsedSinceNews >= 0 && elapsedSinceNews < 86400) {
-                        const progress = elapsedSinceNews / 86400;
-                        const currentEffect = tpl.mult + (floorLevel - tpl.mult) * progress;
-                        accumulatedMult *= currentEffect;
-                    } else if (elapsedSinceNews >= 86400) {
+                    if (elapsed >= 0 && elapsed < 86400) {
+                        accumulatedMult *= (tpl.mult + (floorLevel - tpl.mult) * (elapsed / 86400));
+                    } else if (elapsed >= 86400) {
                         accumulatedMult *= floorLevel;
                     }
                 }
@@ -747,22 +749,16 @@
 
         function getActiveNewsHistory() {
             const currentAAT = getAATSecondPrecise();
-            const currentDay = Math.floor(currentAAT / 86400);
-            const currentBlock = Math.floor((currentDay - 1) / 3);
+            const currentBlock = Math.floor((Math.floor(currentAAT / 86400) - 1) / 3);
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
             const history = [];
 
-            const startBlock = Math.max(0, currentBlock - 100);
-
-            for (let b = startBlock; b <= currentBlock; b++) {
+            for (let b = Math.max(0, currentBlock - 100); b <= currentBlock; b++) {
                 const exactNewsTime = getNewsExactTime(b);
                 if (exactNewsTime > currentAAT) break;
 
-                const rndAssetIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length);
-                const targetedAsset = assetsArr[rndAssetIdx];
-                const templates = newsTemplates[targetedAsset];
-                const rndTplIdx = Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length);
-                const tpl = templates[rndTplIdx];
+                const targetedAsset = assetsArr[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length)];
+                const tpl = newsTemplates[targetedAsset][Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * newsTemplates[targetedAsset].length)];
 
                 history.unshift({
                     dateStr: `${formatAATTimestamp(exactNewsTime, false)} AAT`,
@@ -778,18 +774,15 @@
         function renderNewsList() {
             const container = document.getElementById('newsListContainer');
             if (!container) return;
-
             const news = getActiveNewsHistory();
             if (news.length === 0) {
                 container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Новостей пока нет</div>';
                 return;
             }
-
             let html = '';
             news.forEach(n => {
                 const isPump = n.type === 'PUMP';
-                const cls = isPump ? 'pump' : 'dump';
-                html += `<div class="news-item ${cls}">
+                html += `<div class="news-item ${isPump ? 'pump' : 'dump'}">
                     <div class="news-header-line">
                         <span><b>[${n.dateStr}]</b> Актив: ${n.asset}</span>
                         <span style="color: ${isPump ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${isPump ? '📈 ПАМП (x' + n.mult.toFixed(2) + ')' : '📉 ДАМП (x' + n.mult.toFixed(2) + ')'}</span>
@@ -800,30 +793,33 @@
             container.innerHTML = html;
         }
 
+        async function fetchGlobalServerState() {
+            try { return await (await fetch('/api/leaderboard')).json(); } catch (e) { return []; }
+        }
+
         function getAbsolutePriceAtSecond(targetAATSecond, asset) {
             const config = assetConfigs[asset];
-            const startEpoch = AAT_BASE_TIMESTAMP;
-            const elapsedMonths = Math.max(0, (targetAATSecond - startEpoch) / SECONDS_IN_MONTH);
-            const currentTrendBase = config.basePrice * Math.pow(1.12, elapsedMonths);
-
-            const chunkStep = TICK_INTERVAL_SECONDS;
-            const targetChunk = Math.floor(targetAATSecond / chunkStep);
+            const assetTimeSec = targetAATSecond * config.timeScale;
+            const elapsedMonths = Math.max(0, (assetTimeSec - AAT_BASE_TIMESTAMP) / SECONDS_IN_MONTH);
             
-            let price = currentTrendBase;
-            const startChunk = Math.max(0, targetChunk - 100);
+            const baseTrendBase = config.basePrice * Math.pow(1.14, elapsedMonths);
+            const chunkStep = TICK_INTERVAL_SECONDS;
+            const targetChunk = Math.floor(assetTimeSec / chunkStep);
+            const startChunk = Math.max(0, targetChunk - 250);
+
+            let price = baseTrendBase;
+            let momentum = 0;
 
             for (let c = startChunk; c <= targetChunk; c++) {
-                const rnd = getSeedRandom(c + config.seedOffset);
-                const delta = (rnd - 0.495) * config.vol * price;
-                price += delta;
+                const noise = (getSeedRandom(c + config.seedOffset) - 0.495) * 2;
+                momentum = momentum * 0.65 + noise * 0.35;
+                price += price * (momentum * 0.7 + noise * 0.3) * config.vol;
+                if (price < 1.0) price = 1.0;
             }
 
-            const subRnd = getSeedRandom(targetChunk + config.seedOffset * 2);
-            const subDelta = (subRnd - 0.5) * (config.vol * price * 0.6);
+            const subDelta = (getSeedRandom(targetChunk + config.seedOffset * 3) - 0.5) * (config.vol * price * 0.4);
             price = Math.max(1.0, price + subDelta);
-
-            const newsMultiplier = getNewsMultiplierAtSecond(targetAATSecond, asset);
-            price *= newsMultiplier;
+            price *= getNewsMultiplierAtSecond(targetAATSecond, asset);
 
             return fromNumber(price);
         }
@@ -831,8 +827,10 @@
         function getRawTicksHistory(asset) {
             const currentAATSecond = getAATSecondPrecise();
             const history = [];
-            for (let i = TICKS_COUNT - 1; i >= 0; i--) {
-                const sec = currentAATSecond - (i * TICK_INTERVAL_SECONDS);
+            let ticksCount = 300, step = 1;
+
+            for (let i = ticksCount - 1; i >= 0; i--) {
+                const sec = currentAATSecond - (i * step * TICK_INTERVAL_SECONDS);
                 history.push(toNumberBN(getAbsolutePriceAtSecond(sec, asset)));
             }
             return history;
@@ -842,48 +840,46 @@
             const now = Date.now();
             const elapsedRealMs = now - state.lastDepTime;
             if (elapsedRealMs >= 500) {
-                const elapsedSec = elapsedRealMs / 1000;
-                const effectiveSec = elapsedSec * AAT_SPEED_MULTIPLIER;
+                const effectiveSec = (elapsedRealMs / 1000) * AAT_SPEED_MULTIPLIER;
                 state.lastDepTime = now;
 
-                const shareLogPerSec = Math.log10(SHARE_DEP_RATE);
-                const voidLogPerSec = Math.log10(VOID_DEP_RATE);
-                const eurLogPerSec = Math.log10(EUR_DEP_RATE);
-
-                const totalShareLogOffset = effectiveSec * shareLogPerSec;
-                const totalVoidLogOffset = effectiveSec * voidLogPerSec;
-                const totalEurLogOffset = effectiveSec * eurLogPerSec;
-
-                function compoundBN(dep, logOffset) {
+                function compoundBN(dep, rate) {
                     if (!dep || (dep.m === 0 && dep.e === 0)) return { m: 0, e: 0 };
-                    let m = dep.m;
-                    let e = dep.e;
-                    let currentLog = e + Math.log10(m);
-                    let newLog = currentLog + logOffset;
+                    let newLog = dep.e + Math.log10(dep.m) + effectiveSec * Math.log10(rate);
                     let newE = Math.floor(newLog);
-                    let newM = Math.pow(10, newLog - newE);
-                    return normalizeBN({ m: newM, e: newE });
+                    return normalizeBN({ m: Math.pow(10, newLog - newE), e: newE });
                 }
 
-                ['AITH', 'SOFF', 'BIOM'].forEach(a => {
-                    if (state.deposits[a]) {
-                        state.deposits[a] = compoundBN(state.deposits[a], totalShareLogOffset);
-                    }
-                });
-
-                if (state.deposits.VOID) {
-                    state.deposits.VOID = compoundBN(state.deposits.VOID, totalVoidLogOffset);
-                }
-
-                if (state.deposits.EUR) {
-                    state.deposits.EUR = compoundBN(state.deposits.EUR, totalEurLogOffset);
-                }
+                ['AITH', 'SOFF', 'BIOM'].forEach(a => { if (state.deposits[a]) state.deposits[a] = compoundBN(state.deposits[a], SHARE_DEP_RATE); });
+                if (state.deposits.VOID) state.deposits.VOID = compoundBN(state.deposits.VOID, VOID_DEP_RATE);
+                if (state.deposits.EUR) state.deposits.EUR = compoundBN(state.deposits.EUR, EUR_DEP_RATE);
             }
         }
 
+        function checkShortLiquidations() {
+            const curSec = getAATSecondPrecise();
+            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
+                const shortShares = state.shorts[asset] || createBN(0, 0);
+                if (shortShares.m > 0) {
+                    const priceBN = getAbsolutePriceAtSecond(curSec, asset);
+                    const openAvgBN = state.shortAvgPrices[asset] || priceBN;
+                    const lossBN = subBN(mulBN(shortShares, priceBN), mulBN(shortShares, openAvgBN));
+                    const marginBN = state.shortMargins[asset] || mulBN(shortShares, openAvgBN);
+
+                    if (compareBN(lossBN, marginBN) >= 0) {
+                        state.shorts[asset] = createBN(0, 0);
+                        state.shortAvgPrices[asset] = createBN(0, 0);
+                        state.shortMargins[asset] = createBN(0, 0);
+                        showToast(`💥 ЛИКВИДАЦИЯ: Шорт ${asset} закрыт по маржин-коллу!`);
+                        addHistoryRecord('ЛИКВИДАЦИЯ', `Шорт ${asset} сожжен ростом цены`, `-${formatBigNumberBN(marginBN, 2)} €`, priceBN, state.abs, selectedAsset, 1.0);
+                        saveProfile();
+                    }
+                }
+            });
+        }
+
         function updateAATClockFast() {
-            const currentAATSec = getAATSecondPrecise();
-            document.getElementById('aatClockDisplay').innerText = `Время по AAT: ${formatAATTimestamp(currentAATSec, true)}`;
+            document.getElementById('aatClockDisplay').innerText = `Время по AAT: ${formatAATTimestamp(getAATSecondPrecise(), true)}`;
         }
 
         function switchTab(tabId) {
@@ -892,12 +888,12 @@
             if(mainBtn) mainBtn.classList.add('active');
 
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
-
             const targetTab = document.getElementById(tabId);
             if (targetTab) targetTab.classList.remove('hidden');
 
             document.getElementById('userDropdown').classList.remove('active');
 
+            if (tabId === 'loanTab') updateLoanUI();
             if (tabId === 'newsTab') renderNewsList();
             if (tabId === 'historyTab') renderFullHistory();
             if (tabId === 'leaderTab') renderLeaderboard();
@@ -908,9 +904,245 @@
             document.getElementById('userDropdown').classList.toggle('active');
         }
 
-        document.addEventListener('click', () => {
-            document.getElementById('userDropdown').classList.remove('active');
-        });
+        document.addEventListener('click', () => { document.getElementById('userDropdown').classList.remove('active'); });
+
+        function getDynamicLoanLimit() {
+            const minLimitBN = createBN(1.0, 4); // 10 000 €
+            const peakCap = state.maxCapitalLast4Months || createBN(0, 0);
+            const calculatedLimit = mulBN(peakCap, fromNumber(0.50));
+            return compareBN(calculatedLimit, minLimitBN) > 0 ? calculatedLimit : minLimitBN;
+        }
+
+function checkMonthlyLoanReset() {
+    const curSec = getAATSecondPrecise();
+    const cal = getAATCalendarDate(curSec);
+    
+    // Уникальный числовой индекс месяца (например, год * 12 + месяц)
+    const currentMonthKey = cal.year * 12 + cal.month;
+
+    if (!state.lastLoanMonthReset || state.lastLoanMonthReset < currentMonthKey) {
+        state.loanTakenMonthBN = createBN(0, 0);
+        state.lastLoanMonthReset = currentMonthKey;
+    }
+}
+
+        function updateLoanSlider(val) {
+            loanPercent = parseInt(val);
+            document.getElementById('loanSliderPercent').innerText = loanPercent + '%';
+            updateLoanCalculationHint();
+        }
+
+        function setLoanPreset(val) {
+            document.getElementById('loanSlider').value = val;
+            updateLoanSlider(val);
+        }
+
+        function updateLoanCalculationHint() {
+            checkMonthlyLoanReset();
+            const totalLimitBN = getDynamicLoanLimit();
+            const takenBN = state.loanTakenMonthBN || createBN(0,0);
+            const remainingLimitBN = subBN(totalLimitBN, takenBN);
+            
+            const pctBN = fromNumber(loanPercent / 100);
+            const selectedTakeBN = mulBN(remainingLimitBN.m > 0 ? remainingLimitBN : createBN(0,0), pctBN);
+            const repayAmountBN = mulBN(selectedTakeBN, fromNumber(1.10));
+
+            const hintElem = document.getElementById('loanCalcHint');
+            if (hintElem) {
+                hintElem.innerText = `Получите на руки: +${formatBigNumberBN(selectedTakeBN, 2)} € | Долг с комиссией 10%: ${formatBigNumberBN(repayAmountBN, 2)} €`;
+            }
+        }
+
+        function updateLoanUI() {
+            checkMonthlyLoanReset();
+            const totalLimitBN = getDynamicLoanLimit();
+            const takenBN = state.loanTakenMonthBN || createBN(0,0);
+            const debtBN = state.loanDebtBN || createBN(0,0);
+
+            document.getElementById('loanMonthDisplay').innerText = `${formatBigNumberBN(takenBN, 0)} / ${formatBigNumberBN(totalLimitBN, 0)} €`;
+            document.getElementById('loanDebtDisplay').innerText = `${formatBigNumberBN(debtBN, 2)} €`;
+            updateLoanCalculationHint();
+        }
+
+        function takeLoanBySlider() {
+            checkMonthlyLoanReset();
+            const totalLimitBN = getDynamicLoanLimit();
+            const takenBN = state.loanTakenMonthBN || createBN(0,0);
+            const remainingLimitBN = subBN(totalLimitBN, takenBN);
+
+            if (remainingLimitBN.m <= 0) {
+                showToast('Месячный лимит кредита полностью исчерпан!');
+                return;
+            }
+
+            const pctBN = fromNumber(loanPercent / 100);
+            const amountTakeBN = mulBN(remainingLimitBN, pctBN);
+
+            if (amountTakeBN.m <= 0) {
+                showToast('Выберите сумму кредита!');
+                return;
+            }
+
+            const debtAddBN = mulBN(amountTakeBN, fromNumber(1.10));
+
+            state.abs = addBN(state.abs, amountTakeBN);
+            state.loanDebtBN = addBN(state.loanDebtBN || createBN(0,0), debtAddBN);
+            state.loanTakenMonthBN = addBN(state.loanTakenMonthBN || createBN(0,0), amountTakeBN);
+            state.hasTakenLoan = true;
+
+            showToast(`Взято +${formatBigNumberBN(amountTakeBN, 2)} €! Долг: ${formatBigNumberBN(debtAddBN, 2)} €`);
+            addHistoryRecord('КРЕДИТ', `Получен займ +${formatBigNumberBN(amountTakeBN, 2)} €`, `+${formatBigNumberBN(amountTakeBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+
+            saveProfile();
+            updateUI();
+            updateLoanUI();
+        }
+
+        function repayLoanAction() {
+            const debtBN = state.loanDebtBN || createBN(0,0);
+            if (debtBN.m <= 0) {
+                showToast('У вас нет активных кредитов!');
+                return;
+            }
+
+            if (compareBN(state.abs, debtBN) < 0) {
+                showToast(`Недостаточно средств! Нужно: ${formatBigNumberBN(debtBN, 2)} €`);
+                return;
+            }
+
+            state.abs = subBN(state.abs, debtBN);
+            state.loanDebtBN = createBN(0,0);
+            showToast(`Кредит успешно погашен!`);
+            addHistoryRecord('ПОГАШЕНИЕ', `Погашен долг ${formatBigNumberBN(debtBN, 2)} €`, `-${formatBigNumberBN(debtBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+
+            saveProfile();
+            updateUI();
+            updateLoanUI();
+        }
+
+        function claimStarterBonus() {
+            if (state.hasTakenLoan || state.abs.m > 0) return;
+            state.abs = createBN(1.0, 2);
+            document.getElementById('bonusBanner').classList.add('hidden');
+            showToast('🎁 Вам зачислен стартовый бонус 100 €!');
+            addHistoryRecord('БОНУС', 'Получен стартовый капитал 100.00 €', '+100.00 €', createBN(1, 0), state.abs, 'EUR', 1.0);
+            saveProfile();
+            updateUI();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(300).fill(''),
+                    datasets: [{
+                        label: selectedAsset,
+                        data: getRawTicksHistory(selectedAsset),
+                        borderColor: assetConfigs[selectedAsset].color,
+                        backgroundColor: assetConfigs[selectedAsset].color + '15',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { display: false },
+                        y: { grid: { color: '#2a3754' }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => formatBigNumberBN(fromNumber(v), 2) + '€' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateChartTick() {
+            processDepositCompound();
+            checkShortLiquidations();
+
+            if (chartInstance) {
+                const prices = getRawTicksHistory(selectedAsset);
+                chartInstance.data.labels = Array(prices.length).fill('');
+                chartInstance.data.datasets[0].label = selectedAsset;
+                chartInstance.data.datasets[0].data = prices;
+                chartInstance.data.datasets[0].borderColor = assetConfigs[selectedAsset].color;
+                chartInstance.update('none');
+
+                const priceBN = getAbsolutePriceAtSecond(getAATSecondPrecise(), selectedAsset);
+                document.getElementById('currentRate').innerText = formatBigNumberBN(priceBN, 2) + ' €';
+                updatePositionDisplay(priceBN);
+            }
+
+            updateDepositUI();
+            updateBalanceGridAssets();
+            updateSliderCalculationHint();
+            updateCapitalizationDisplay();
+        }
+
+        function updateCapitalizationDisplay() {
+            const curSec = getAATSecondPrecise();
+            let capBN = state.abs || createBN(100, 0);
+
+            if (state.deposits && state.deposits.EUR) capBN = addBN(capBN, state.deposits.EUR);
+
+            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(a => {
+                const priceBN = getAbsolutePriceAtSecond(curSec, a);
+                const shares = addBN(state.assets[a] || createBN(0,0), state.deposits[a] || createBN(0,0));
+                capBN = addBN(capBN, mulBN(shares, priceBN));
+
+                if (state.shorts[a]) {
+                    const shortShares = state.shorts[a];
+                    const openAvgBN = state.shortAvgPrices[a] || priceBN;
+                    capBN = addBN(capBN, subBN(mulBN(shortShares, openAvgBN), mulBN(shortShares, priceBN)));
+                }
+            });
+
+            if (compareBN(capBN, state.maxCapitalLast4Months || createBN(0,0)) > 0) {
+                state.maxCapitalLast4Months = capBN;
+            }
+
+            document.getElementById('capitalizationDisplay').innerText = formatBigNumberBN(capBN, 2) + ' €';
+
+            const bonusBanner = document.getElementById('bonusBanner');
+            if (!state.hasTakenLoan && compareBN(state.abs, createBN(0,0)) === 0) {
+                bonusBanner.classList.remove('hidden');
+            } else {
+                bonusBanner.classList.add('hidden');
+            }
+        }
+
+        function updateBalanceGridAssets() {
+            const curSec = getAATSecondPrecise();
+            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
+                const priceBN = getAbsolutePriceAtSecond(curSec, asset);
+                const rateElem = document.getElementById(`rate-${asset}`);
+                if (rateElem) rateElem.innerText = formatBigNumberBN(priceBN, 2) + '€';
+
+                const longShares = state.assets[asset] || createBN(0,0);
+                const longElem = document.getElementById(`long-${asset}`);
+                if (longElem) longElem.innerText = formatBigNumberBN(longShares, 4);
+                
+                const pnlLongElem = document.getElementById(`pnl-long-${asset}`);
+                if (pnlLongElem) {
+                    const avgPriceBN = state.avgPrices[asset] || createBN(0,0);
+                    if (longShares.m > 0 && avgPriceBN.m > 0) {
+                        const pnlBN = subBN(mulBN(longShares, priceBN), mulBN(longShares, avgPriceBN));
+                        pnlLongElem.innerText = `(${pnlBN.m >= 0 ? '+' : ''}${formatBigNumberBN(pnlBN, 1)}€)`;
+                        pnlLongElem.className = pnlBN.m >= 0 ? 'pnl-mini-up' : 'pnl-mini-down';
+                    } else { pnlLongElem.innerText = '—'; pnlLongElem.className = ''; }
+                }
+
+                const shortShares = state.shorts[asset] || createBN(0,0);
+                const shortElem = document.getElementById(`short-${asset}`);
+                if (shortElem) shortElem.innerText = formatBigNumberBN(shortShares, 4);
+            });
+        }
 
         function selectDepAsset(asset, btn) {
             selectedDepAsset = asset;
@@ -934,10 +1166,8 @@
         function updateDepCalculationHint() {
             const hintElem = document.getElementById('depCalcHint');
             if (!hintElem) return;
-
             const curSec = getAATSecondPrecise();
-            const pctFraction = depPercent / 100;
-            const pctBN = fromNumber(pctFraction);
+            const pctBN = fromNumber(depPercent / 100);
 
             if (selectedDepAsset === 'EUR') {
                 const eurBal = mulBN(state.abs, pctBN);
@@ -947,14 +1177,7 @@
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
                 const eurForBuy = mulBN(state.abs, pctBN);
                 const sharesToBuy = divBN(eurForBuy, priceBN);
-
-                const ownedShares = state.assets[selectedDepAsset] || createBN(0,0);
-                const sharesToTransfer = mulBN(ownedShares, pctBN);
-
-                const depShares = state.deposits[selectedDepAsset] || createBN(0,0);
-                const sharesToWithdraw = mulBN(depShares, pctBN);
-
-                hintElem.innerText = `Покупка за €: ~${formatBigNumberBN(sharesToBuy, 4)} акц. | Из портфеля: ${formatBigNumberBN(sharesToTransfer, 4)} акц. | С деп.: ${formatBigNumberBN(sharesToWithdraw, 4)} акц.`;
+                hintElem.innerText = `Покупка за €: ~${formatBigNumberBN(sharesToBuy, 4)} акц. | На депо: ${formatBigNumberBN(mulBN(state.deposits[selectedDepAsset] || createBN(0,0), pctBN), 4)} акц.`;
             }
         }
 
@@ -978,113 +1201,75 @@
         function updateDepositUI() {
             processDepositCompound();
             const curSec = getAATSecondPrecise();
-
             if (selectedDepAsset === 'EUR') {
-                document.getElementById('depCurrentRate').innerText = '1.00 € (2.5%/мес)';
-                const depVal = state.deposits.EUR || createBN(0,0);
-                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 2) + ' €';
-            } else if (selectedDepAsset === 'VOID') {
-                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                document.getElementById('depCurrentRate').innerText = formatBigNumberBN(priceBN, 2) + ' € (17.5%/мес)';
-                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
-                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 4) + ' акц.';
+                document.getElementById('depCurrentRate').innerText = '1.00 € (3%/мес)';
+                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(state.deposits.EUR || createBN(0,0), 2) + ' €';
             } else {
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                document.getElementById('depCurrentRate').innerText = formatBigNumberBN(priceBN, 2) + ' € (7.5%/мес)';
-                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
-                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(depVal, 4) + ' акц.';
+                document.getElementById('depCurrentRate').innerText = formatBigNumberBN(priceBN, 2) + ' €';
+                document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(state.deposits[selectedDepAsset] || createBN(0,0), 4) + ' акц.';
             }
             updateDepCalculationHint();
         }
 
         function depositAction(actionType) {
             processDepositCompound();
-            const curSec = getAATSecondPrecise();
-            const pctFraction = depPercent / 100;
-            const pctBN = fromNumber(pctFraction);
+            const pctBN = fromNumber(depPercent / 100);
 
-            if (actionType === 'DEPOSIT_EUR') {
-                const amountEur = mulBN(state.abs, pctBN);
-                if (amountEur.m === 0) {
-                    showToast('Недостаточно средств на балансе (€)!');
-                    return;
+            if (selectedDepAsset === 'EUR') {
+                if (actionType === 'DEPOSIT_EUR') {
+                    const amountEur = mulBN(state.abs, pctBN);
+                    if (amountEur.m === 0) return;
+                    state.abs = subBN(state.abs, amountEur);
+                    state.deposits.EUR = addBN(state.deposits.EUR || createBN(0,0), amountEur);
+                    showToast(`Положено на депозит: +${formatBigNumberBN(amountEur, 2)} €`);
+                    addHistoryRecord('ДЕПОЗИТ €', `Вложено ${formatBigNumberBN(amountEur, 2)} €`, `-${formatBigNumberBN(amountEur, 2)} €`, createBN(1, 0), state.abs, 'EUR', depPercent / 100);
+                } else if (actionType === 'WITHDRAW_EUR') {
+                    const eurVal = mulBN(state.deposits.EUR || createBN(0,0), pctBN);
+                    if (eurVal.m === 0) return;
+                    state.abs = addBN(state.abs, eurVal);
+                    state.deposits.EUR = subBN(state.deposits.EUR, eurVal);
+                    showToast(`Выведено с депозита: +${formatBigNumberBN(eurVal, 2)} €`);
+                    addHistoryRecord('ДЕПОЗИТ €', `Выведено ${formatBigNumberBN(eurVal, 2)} €`, `+${formatBigNumberBN(eurVal, 2)} €`, createBN(1, 0), state.abs, 'EUR', depPercent / 100);
                 }
-                state.abs = subBN(state.abs, amountEur);
-                state.deposits.EUR = addBN(state.deposits.EUR || createBN(0,0), amountEur);
-                showToast(`Положено на депозит: +${formatBigNumberBN(amountEur, 2)} € (${depPercent}%)`);
-                addHistoryRecord('ДЕПОЗИТ €', `Вложено ${formatBigNumberBN(amountEur, 2)} € (${depPercent}%)`, `-${formatBigNumberBN(amountEur, 2)} €`, createBN(1, 0), state.abs);
-
-            } else if (actionType === 'WITHDRAW_EUR') {
-                const eurVal = mulBN(state.deposits.EUR || createBN(0,0), pctBN);
-                if (eurVal.m === 0) {
-                    showToast('На депозите нет евро!');
-                    return;
-                }
-                state.abs = addBN(state.abs, eurVal);
-                state.deposits.EUR = subBN(state.deposits.EUR, eurVal);
-                showToast(`Выведено с депозита: +${formatBigNumberBN(eurVal, 2)} € (${depPercent}%)`);
-                addHistoryRecord('ДЕПОЗИТ €', `Выведено ${formatBigNumberBN(eurVal, 2)} € с депозита (${depPercent}%)`, `+${formatBigNumberBN(eurVal, 2)} €`, createBN(1, 0), state.abs);
-
-            } else if (actionType === 'BUY_EUR') {
-                const costEuro = mulBN(state.abs, pctBN);
-                if (costEuro.m === 0) {
-                    showToast('Недостаточно средств (€)!');
-                    return;
-                }
+            } else {
+                const curSec = getAATSecondPrecise();
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                const boughtShares = divBN(costEuro, priceBN);
 
-                state.abs = subBN(state.abs, costEuro);
-                state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), boughtShares);
-
-                showToast(`Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedDepAsset} в депозит (${depPercent}%)`);
-                addHistoryRecord('ДЕПОЗИТ', `Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedDepAsset} за ${formatBigNumberBN(costEuro, 2)} €`, `-${formatBigNumberBN(costEuro, 2)} €`, priceBN, state.abs);
-
-            } else if (actionType === 'TRANSFER_SHARES') {
-                const owned = state.assets[selectedDepAsset] || createBN(0,0);
-                const sharesToTransfer = mulBN(owned, pctBN);
-                if (sharesToTransfer.m === 0) {
-                    showToast(`Недостаточно акций ${selectedDepAsset} в портфеле!`);
-                    return;
+                if (actionType === 'BUY_EUR') {
+                    const spendEur = mulBN(state.abs, pctBN);
+                    if (spendEur.m === 0) return;
+                    const boughtShares = divBN(spendEur, priceBN);
+                    state.abs = subBN(state.abs, spendEur);
+                    state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), boughtShares);
+                    showToast(`Куплено на депозит: ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedDepAsset}`);
+                    addHistoryRecord('ДЕПОЗИТ', `Куплено на депозит ${selectedDepAsset}`, `-${formatBigNumberBN(spendEur, 2)} €`, priceBN, state.abs, selectedDepAsset, depPercent / 100);
+                } else if (actionType === 'TRANSFER_SHARES') {
+                    const ownedShares = state.assets[selectedDepAsset] || createBN(0,0);
+                    const transferShares = mulBN(ownedShares, pctBN);
+                    if (transferShares.m === 0) { showToast('Нет доступных акций в портфеле!'); return; }
+                    state.assets[selectedDepAsset] = subBN(ownedShares, transferShares);
+                    state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), transferShares);
+                    showToast(`Переведено на депозит: ${formatBigNumberBN(transferShares, 4)} акц.`);
+                    addHistoryRecord('ДЕПОЗИТ', `Переведено в депозит ${selectedDepAsset}`, '0.00 €', priceBN, state.abs, selectedDepAsset, depPercent / 100);
+                } else if (actionType === 'SELL_DEP_EUR') {
+                    const depShares = state.deposits[selectedDepAsset] || createBN(0,0);
+                    const sellShares = mulBN(depShares, pctBN);
+                    if (sellShares.m === 0) return;
+                    const gainEur = mulBN(sellShares, priceBN);
+                    state.deposits[selectedDepAsset] = subBN(depShares, sellShares);
+                    state.abs = addBN(state.abs, gainEur);
+                    showToast(`Продано с депозита: +${formatBigNumberBN(gainEur, 2)} €`);
+                    addHistoryRecord('ДЕПОЗИТ', `Продано с депозита ${selectedDepAsset}`, `+${formatBigNumberBN(gainEur, 2)} €`, priceBN, state.abs, selectedDepAsset, depPercent / 100);
+                } else if (actionType === 'OUT_ALL') {
+                    const depShares = state.deposits[selectedDepAsset] || createBN(0,0);
+                    const outShares = mulBN(depShares, pctBN);
+                    if (outShares.m === 0) return;
+                    state.deposits[selectedDepAsset] = subBN(depShares, outShares);
+                    state.assets[selectedDepAsset] = addBN(state.assets[selectedDepAsset] || createBN(0,0), outShares);
+                    showToast(`Выведено в портфель: ${formatBigNumberBN(outShares, 4)} акц.`);
+                    addHistoryRecord('ДЕПОЗИТ', `Выведено в портфель ${selectedDepAsset}`, '0.00 €', priceBN, state.abs, selectedDepAsset, depPercent / 100);
                 }
-
-                state.assets[selectedDepAsset] = subBN(owned, sharesToTransfer);
-                state.deposits[selectedDepAsset] = addBN(state.deposits[selectedDepAsset] || createBN(0,0), sharesToTransfer);
-
-                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                showToast(`Переведено ${formatBigNumberBN(sharesToTransfer, 4)} акц. в депозит (${depPercent}%)`);
-                addHistoryRecord('ДЕПОЗИТ', `Переведено ${formatBigNumberBN(sharesToTransfer, 4)} акц. ${selectedDepAsset} в депозит`, `${formatBigNumberBN(sharesToTransfer, 4)} акц.`, priceBN, state.abs);
-
-            } else if (actionType === 'SELL_DEP_EUR') {
-                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
-                const sharesToSell = mulBN(depVal, pctBN);
-                if (sharesToSell.m === 0) {
-                    showToast('На депозите нет акций для продажи!');
-                    return;
-                }
-
-                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                const revenue = mulBN(sharesToSell, priceBN);
-
-                state.deposits[selectedDepAsset] = subBN(depVal, sharesToSell);
-                state.abs = addBN(state.abs, revenue);
-
-                showToast(`Продано с депозита ${formatBigNumberBN(sharesToSell, 4)} акц. Выручено: +${formatBigNumberBN(revenue, 2)} €`);
-                addHistoryRecord('ДЕПОЗИТ', `Продано с депозита ${formatBigNumberBN(sharesToSell, 4)} акц. ${selectedDepAsset}`, `+${formatBigNumberBN(revenue, 2)} €`, priceBN, state.abs);
-
-            } else if (actionType === 'OUT_ALL') {
-                const depVal = state.deposits[selectedDepAsset] || createBN(0,0);
-                if (depVal.m === 0) {
-                    showToast('На депозите нет акций!');
-                    return;
-                }
-
-                state.assets[selectedAsset] = addBN(state.assets[selectedAsset] || createBN(0,0), depVal);
-                state.deposits[selectedDepAsset] = createBN(0,0);
-
-                const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
-                showToast(`Выведено ${formatBigNumberBN(depVal, 4)} акц. с депозита в портфель (100%)`);
-                addHistoryRecord('ДЕПОЗИТ', `Выведено ${formatBigNumberBN(depVal, 4)} акц. ${selectedDepAsset} в портфель`, `+${formatBigNumberBN(depVal, 4)} акц.`, priceBN, state.abs);
             }
 
             saveProfile();
@@ -1092,219 +1277,26 @@
             updateChartTick();
         }
 
-        function initChart() {
-            const ctx = document.getElementById('marketChart').getContext('2d');
-            const initialLabels = Array(TICKS_COUNT).fill('');
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: initialLabels,
-                    datasets: [{
-                        label: selectedAsset,
-                        data: getRawTicksHistory(selectedAsset),
-                        borderColor: assetConfigs[selectedAsset].color,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0.35,
-                        fill: true,
-                        backgroundColor: assetConfigs[selectedAsset].color + '15'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    scales: {
-                        x: { display: false },
-                        y: { 
-                            grid: { color: '#2a3754' }, 
-                            ticks: { 
-                                color: '#94a3b8', 
-                                font: { size: 10 },
-                                callback: function(value) { return formatBigNumberBN(fromNumber(value), 2) + '€'; }
-                            } 
-                        }
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Курс: ' + formatBigNumberBN(fromNumber(context.raw), 2) + ' €';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateChartTick() {
-            processDepositCompound();
-
-            if (chartInstance) {
-                const prices = getRawTicksHistory(selectedAsset);
-                const config = assetConfigs[selectedAsset];
-
-                chartInstance.data.datasets[0].label = selectedAsset;
-                chartInstance.data.datasets[0].data = prices;
-                chartInstance.data.datasets[0].borderColor = config.color;
-                chartInstance.data.datasets[0].backgroundColor = config.color + '15';
-                chartInstance.update('none');
-
-                const curSec = getAATSecondPrecise();
-                const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
-                document.getElementById('currentRate').innerText = formatBigNumberBN(priceBN, 2) + ' €';
-
-                updatePositionDisplay(priceBN);
-            }
-
-            checkLoanStatus();
-            updateDepositUI();
-            updateBalanceGridAssets();
-            updateSliderCalculationHint();
-            updateCapitalizationDisplay();
-        }
-
-        function updateCapitalizationDisplay() {
-            const curSec = getAATSecondPrecise();
-            let capBN = state.abs || createBN(100, 0);
-
-            if (state.deposits && state.deposits.EUR) {
-                capBN = addBN(capBN, state.deposits.EUR);
-            }
-
-            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(a => {
-                const priceBN = getAbsolutePriceAtSecond(curSec, a);
-                const shares = addBN(
-                    state.assets && state.assets[a] ? state.assets[a] : createBN(0,0),
-                    state.deposits && state.deposits[a] ? state.deposits[a] : createBN(0,0)
-                );
-                const sharesVal = mulBN(shares, priceBN);
-                capBN = addBN(capBN, sharesVal);
-
-                if (state.shorts && state.shorts[a]) {
-                    const shortShares = state.shorts[a];
-                    const openAvgBN = state.shortAvgPrices[a] || priceBN;
-                    const initialValBN = mulBN(shortShares, openAvgBN);
-                    const currentValBN = mulBN(shortShares, priceBN);
-                    const shortPnlBN = subBN(initialValBN, currentValBN);
-                    capBN = addBN(capBN, shortPnlBN);
-                }
-            });
-
-            const capElem = document.getElementById('capitalizationDisplay');
-            if (capElem) {
-                capElem.innerText = formatBigNumberBN(capBN, 2) + ' €';
-            }
-        }
-
-        function updateBalanceGridAssets() {
-            const curSec = getAATSecondPrecise();
-            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
-                const priceBN = getAbsolutePriceAtSecond(curSec, asset);
-                const rateElem = document.getElementById(`rate-${asset}`);
-                if (rateElem) rateElem.innerText = formatBigNumberBN(priceBN, 2) + '€';
-
-                const longShares = state.assets[asset] || createBN(0,0);
-                const longElem = document.getElementById(`long-${asset}`);
-                const pnlLongElem = document.getElementById(`pnl-long-${asset}`);
-                if (longElem) longElem.innerText = formatBigNumberBN(longShares, 4);
-                if (pnlLongElem) {
-                    const avgPriceBN = state.avgPrices[asset] || createBN(0,0);
-                    if (longShares.m > 0 && avgPriceBN.m > 0) {
-                        const costBN = mulBN(longShares, avgPriceBN);
-                        const valBN = mulBN(longShares, priceBN);
-                        const pnlBN = subBN(valBN, costBN);
-                        const sign = pnlBN.m >= 0 ? '+' : '';
-                        pnlLongElem.innerText = `(${sign}${formatBigNumberBN(pnlBN, 1)}€)`;
-                        pnlLongElem.className = pnlBN.m >= 0 ? 'pnl-mini-up' : 'pnl-mini-down';
-                    } else {
-                        pnlLongElem.innerText = '—';
-                        pnlLongElem.className = '';
-                    }
-                }
-
-                const shortShares = state.shorts[asset] || createBN(0,0);
-                const shortElem = document.getElementById(`short-${asset}`);
-                const pnlShortElem = document.getElementById(`pnl-short-${asset}`);
-                if (shortElem) shortElem.innerText = formatBigNumberBN(shortShares, 4);
-                if (pnlShortElem) {
-                    const openAvgBN = state.shortAvgPrices[asset] || createBN(0,0);
-                    if (shortShares.m > 0 && openAvgBN.m > 0) {
-                        const openValBN = mulBN(shortShares, openAvgBN);
-                        const curValBN = mulBN(shortShares, priceBN);
-                        const pnlBN = subBN(openValBN, curValBN);
-                        const sign = pnlBN.m >= 0 ? '+' : '';
-                        pnlShortElem.innerText = `(${sign}${formatBigNumberBN(pnlBN, 1)}€)`;
-                        pnlShortElem.className = pnlBN.m >= 0 ? 'pnl-mini-up' : 'pnl-mini-down';
-                    } else {
-                        pnlShortElem.innerText = '—';
-                        pnlShortElem.className = '';
-                    }
-                }
-            });
-        }
-
         function updateSliderCalculationHint() {
             const hintElem = document.getElementById('tradeCalcHint');
             if (!hintElem) return;
-
-            const curSec = getAATSecondPrecise();
-            const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
-            const pctFraction = tradePercent / 100;
-            const pctBN = fromNumber(pctFraction);
+            const priceBN = getAbsolutePriceAtSecond(getAATSecondPrecise(), selectedAsset);
+            const pctBN = fromNumber(tradePercent / 100);
 
             if (tradeMode === 'LONG') {
-                const ownedShares = state.assets[selectedAsset] || createBN(0,0);
                 const buyAmountEur = mulBN(state.abs, pctBN);
                 const buyShares = divBN(buyAmountEur, priceBN);
-
-                const sellShares = mulBN(ownedShares, pctBN);
-                const sellGainEur = mulBN(sellShares, priceBN);
-                const avgPriceBN = state.avgPrices[selectedAsset] || priceBN;
-                const costBN = mulBN(sellShares, avgPriceBN);
-                const pnlBN = subBN(sellGainEur, costBN);
-                const pnlSign = pnlBN.m >= 0 ? '+' : '';
-
-                if (ownedShares.m > 0) {
-                    hintElem.innerText = `Закупка: ${formatBigNumberBN(buyAmountEur, 2)} € (~${formatBigNumberBN(buyShares, 4)} акц.) | Продажа ${tradePercent}%: +${formatBigNumberBN(sellGainEur, 2)} € (PnL: ${pnlSign}${formatBigNumberBN(pnlBN, 2)} €)`;
-                } else {
-                    hintElem.innerText = `Закупка (Покупка): будет использовано ${formatBigNumberBN(buyAmountEur, 2)} € со счета (~${formatBigNumberBN(buyShares, 4)} акц.)`;
-                }
+                hintElem.innerText = `Закупка (${tradePercent}%): ${formatBigNumberBN(buyAmountEur, 2)} € (~${formatBigNumberBN(buyShares, 4)} акц.)`;
             } else {
-                const shortShares = state.shorts[selectedAsset] || createBN(0,0);
                 const openMarginEur = mulBN(state.abs, pctBN);
-                const openShortShares = divBN(openMarginEur, priceBN);
-
-                const closeShares = mulBN(shortShares, pctBN);
-                const openAvgBN = state.shortAvgPrices[selectedAsset] || priceBN;
-                const initialValBN = mulBN(closeShares, openAvgBN);
-                const currentValBN = mulBN(closeShares, priceBN);
-                const pnlBN = subBN(initialValBN, currentValBN);
-                const pnlSign = pnlBN.m >= 0 ? '+' : '';
-
-                if (shortShares.m > 0) {
-                    hintElem.innerText = `Открытие шорта: ${formatBigNumberBN(openMarginEur, 2)} € | Закрытие ${tradePercent}%: ${formatBigNumberBN(closeShares, 4)} акц. (PnL: ${pnlSign}${formatBigNumberBN(pnlBN, 2)} €)`;
-                } else {
-                    hintElem.innerText = `Открытие Шорта: залог с баланса ${formatBigNumberBN(openMarginEur, 2)} € (~${formatBigNumberBN(openShortShares, 4)} акц.)`;
-                }
+                hintElem.innerText = `Залог для Шорта (${tradePercent}%): ${formatBigNumberBN(openMarginEur, 2)} €`;
             }
         }
 
         function setTradeMode(mode) {
             tradeMode = mode;
-            const btnLong = document.getElementById('btnLongMode');
-            const btnShort = document.getElementById('btnShortMode');
-
-            if (mode === 'LONG') {
-                btnLong.className = 'btn-mode active-long';
-                btnShort.className = 'btn-mode';
-            } else {
-                btnLong.className = 'btn-mode';
-                btnShort.className = 'btn-mode active-short';
-            }
+            document.getElementById('btnLongMode').className = mode === 'LONG' ? 'btn-mode active-long' : 'btn-mode';
+            document.getElementById('btnShortMode').className = mode === 'SHORT' ? 'btn-mode active-short' : 'btn-mode';
             renderTradeButtons();
             updateChartTick();
         }
@@ -1332,112 +1324,29 @@
 
             if (tradeMode === 'LONG') {
                 const shares = state.assets[selectedAsset] || createBN(0,0);
-                const holdingsValBN = mulBN(shares, priceBN);
-                holdingsElem.innerText = `Лонг: ${formatBigNumberBN(shares, 4)} акц. (${formatBigNumberBN(holdingsValBN, 2)} €)`;
-
+                holdingsElem.innerText = `Лонг: ${formatBigNumberBN(shares, 4)} акц. (${formatBigNumberBN(mulBN(shares, priceBN), 2)} €)`;
                 const avgPriceBN = state.avgPrices[selectedAsset] || createBN(0,0);
                 if (shares.m > 0 && avgPriceBN.m > 0) {
                     const costBasisBN = mulBN(shares, avgPriceBN);
-                    const pnlEuroBN = subBN(holdingsValBN, costBasisBN);
+                    const pnlEuroBN = subBN(mulBN(shares, priceBN), costBasisBN);
                     const pnlPercent = (toNumberBN(divBN(pnlEuroBN, costBasisBN))) * 100;
-
                     const sign = pnlEuroBN.m >= 0 ? '+' : '';
                     pnlElem.innerText = `PnL: ${sign}${formatBigNumberBN(pnlEuroBN, 2)} € (${sign}${pnlPercent.toFixed(1)}%)`;
                     pnlElem.className = `pnl-val ${pnlEuroBN.m >= 0 ? 'pnl-up' : 'pnl-down'}`;
-                } else {
-                    pnlElem.innerText = `PnL: 0.00 €`;
-                    pnlElem.className = 'pnl-val';
-                }
+                } else { pnlElem.innerText = `PnL: 0.00 €`; pnlElem.className = 'pnl-val'; }
             } else {
                 const shortShares = state.shorts[selectedAsset] || createBN(0,0);
                 const openAvgBN = state.shortAvgPrices[selectedAsset] || createBN(0,0);
                 holdingsElem.innerText = `Шорт: ${formatBigNumberBN(shortShares, 4)} акц. (Входа: ${formatBigNumberBN(openAvgBN, 2)} €)`;
-
                 if (shortShares.m > 0 && openAvgBN.m > 0) {
                     const initialValBN = mulBN(shortShares, openAvgBN);
-                    const currentValBN = mulBN(shortShares, priceBN);
-                    const pnlEuroBN = subBN(initialValBN, currentValBN);
+                    const pnlEuroBN = subBN(initialValBN, mulBN(shortShares, priceBN));
                     const pnlPercent = (toNumberBN(divBN(pnlEuroBN, initialValBN))) * 100;
-
                     const sign = pnlEuroBN.m >= 0 ? '+' : '';
                     pnlElem.innerText = `PnL: ${sign}${formatBigNumberBN(pnlEuroBN, 2)} € (${sign}${pnlPercent.toFixed(1)}%)`;
                     pnlElem.className = `pnl-val ${pnlEuroBN.m >= 0 ? 'pnl-up' : 'pnl-down'}`;
-                } else {
-                    pnlElem.innerText = `PnL: 0.00 €`;
-                    pnlElem.className = 'pnl-val';
-                }
+                } else { pnlElem.innerText = `PnL: 0.00 €`; pnlElem.className = 'pnl-val'; }
             }
-        }
-
-        function checkLoanStatus() {
-            const banner = document.getElementById('loanBanner');
-            const loanText = document.getElementById('loanText');
-            const loanTakeBtn = document.getElementById('loanTakeBtn');
-            const loanRepayBtn = document.getElementById('loanRepayBtn');
-
-            const currentDebt = state.loanAmount || createBN(0,0);
-            const fiftyBN = createBN(5.0, 1);
-            const hasDebt = currentDebt.m > 0;
-            const isLowBalance = compareBN(state.abs, fiftyBN) < 0;
-
-            if (isLowBalance || hasDebt) {
-                banner.classList.remove('hidden');
-
-                if (!hasDebt) {
-                    loanText.innerText = 'Критический баланс (< 50 €)! Доступен кредит.';
-                    loanTakeBtn.innerText = 'Взять +50 €';
-                    loanTakeBtn.classList.remove('hidden');
-                    loanRepayBtn.classList.add('hidden');
-                } else {
-                    loanText.innerText = `Ваш долг: ${formatBigNumberBN(currentDebt, 2)} €`;
-                    
-                    if (isLowBalance) {
-                        loanTakeBtn.innerText = 'Взять +50 €';
-                        loanTakeBtn.classList.remove('hidden');
-                    } else {
-                        loanTakeBtn.classList.add('hidden');
-                    }
-
-                    if (compareBN(state.abs, currentDebt) >= 0) {
-                        loanRepayBtn.innerText = `Погасить ${formatBigNumberBN(currentDebt, 2)} €`;
-                        loanRepayBtn.style.opacity = '1';
-                        loanRepayBtn.style.pointerEvents = 'auto';
-                        loanRepayBtn.classList.remove('hidden');
-                    } else {
-                        loanRepayBtn.innerText = `Нужно ${formatBigNumberBN(currentDebt, 2)} €`;
-                        loanRepayBtn.style.opacity = '0.5';
-                        loanRepayBtn.style.pointerEvents = 'none';
-                        loanRepayBtn.classList.remove('hidden');
-                    }
-                }
-            } else {
-                banner.classList.add('hidden');
-            }
-        }
-
-        function takeLoan() {
-            const fiftyBN = createBN(5.0, 1);
-            state.abs = addBN(state.abs, fiftyBN);
-            state.loanAmount = addBN(state.loanAmount || createBN(0,0), fiftyBN);
-            showToast(`Взят займ +50 €. Всего долг: ${formatBigNumberBN(state.loanAmount, 2)} €`);
-            addHistoryRecord('КРЕДИТ', `Получен займ +50.00 €`, `+50.00 €`, createBN(1, 0), state.abs);
-            saveProfile();
-            updateUI();
-        }
-
-        function repayLoan() {
-            const currentDebt = state.loanAmount || createBN(0,0);
-            if (compareBN(state.abs, currentDebt) < 0) {
-                showToast(`Недостаточно средств! Нужно ${formatBigNumberBN(currentDebt, 2)} €`);
-                return;
-            }
-
-            state.abs = subBN(state.abs, currentDebt);
-            state.loanAmount = createBN(0,0);
-            showToast(`Долг успешно погашен!`);
-            addHistoryRecord('ДОЛГ', `Погашен долг ${formatBigNumberBN(currentDebt, 2)} €`, `-${formatBigNumberBN(currentDebt, 2)} €`, createBN(1, 0), state.abs);
-            saveProfile();
-            updateUI();
         }
 
         function selectAsset(asset, btn) {
@@ -1466,11 +1375,9 @@
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN) {
+        function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN, assetSymbol, tradeWeight) {
             if (!Array.isArray(state.history)) state.history = [];
-            
             const currentAATSec = getAATSecondPrecise();
-            const aatFormattedTime = `${formatAATTimestamp(currentAATSec, true)} AAT`;
             
             state.history.unshift({
                 type,
@@ -1478,12 +1385,13 @@
                 delta: deltaStr,
                 price: priceBN ? formatBigNumberBN(priceBN, 2) + ' €' : '—',
                 balance: currentBalanceBN,
-                datetime: aatFormattedTime
+                datetime: `${formatAATTimestamp(currentAATSec, true)} AAT`,
+                timestamp: currentAATSec,
+                asset: assetSymbol || selectedAsset,
+                weight: tradeWeight !== undefined ? tradeWeight : 1.0
             });
 
-            if (state.history.length > MAX_PAGES * ITEMS_PER_PAGE) {
-                state.history.pop();
-            }
+            if (state.history.length > MAX_PAGES * ITEMS_PER_PAGE) state.history.pop();
             currentPage = 1;
             renderHistory();
         }
@@ -1499,26 +1407,17 @@
         function renderHistory() {
             const list = document.getElementById('historyList');
             if (!list) return;
-
             if (!state.history || state.history.length === 0) {
                 list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Сделок пока нет</div>';
                 return;
             }
-
-            const latestItems = state.history.slice(0, 10);
             let html = '';
-            latestItems.forEach(item => {
-                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
-                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
-                const isDep = item.type.includes('ДЕПОЗИТ');
-                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
-                const balFormatted = formatBigNumberBN(item.balance, 2);
+            state.history.slice(0, 10).forEach(item => {
+                const cls = item.type.includes('ШОРТ') ? 'short' : item.type.includes('КУПИТЬ') ? 'buy' : item.type.includes('КРЕДИТ') ? 'loan' : 'sell';
                 html += `<div class="history-item ${cls}">
                     <span style="font-size: 0.65rem; color: var(--text-muted);">[${item.datetime}]</span>
                     <span style="flex: 1; margin-left: 6px; font-size: 0.75rem;"><b>${item.type}</b>: ${item.desc}</span>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
-                    <span style="font-weight: bold; margin-right:6px;">${item.delta || ''}</span>
-                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${formatBigNumberBN(item.balance, 2)} €</span>
                 </div>`;
             });
             list.innerHTML = html;
@@ -1536,28 +1435,27 @@
             }
 
             const totalPages = Math.ceil(state.history.length / ITEMS_PER_PAGE);
-            if (currentPage > totalPages) currentPage = totalPages;
             indicator.innerText = `Стр. ${currentPage} из ${totalPages}`;
-
-            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-            const pageItems = state.history.slice(startIdx, startIdx + ITEMS_PER_PAGE);
-
             let html = '';
-            pageItems.forEach(item => {
-                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
-                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
-                const isDep = item.type.includes('ДЕПОЗИТ');
-                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
-                const balFormatted = formatBigNumberBN(item.balance, 2);
+            state.history.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
+                const cls = item.type.includes('ШОРТ') ? 'short' : item.type.includes('КУПИТЬ') ? 'buy' : item.type.includes('КРЕДИТ') ? 'loan' : 'sell';
                 html += `<div class="history-item ${cls}">
                     <span style="font-size: 0.7rem; color: var(--text-muted);">[${item.datetime}]</span>
                     <span style="flex: 1; margin-left: 8px;"><b>${item.type}</b>: ${item.desc}</span>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
-                    <span style="font-weight: bold; margin-right:8px;">${item.delta || ''}</span>
-                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${formatBigNumberBN(item.balance, 2)} €</span>
                 </div>`;
             });
             list.innerHTML = html;
+        }
+
+        function getPlayerActivityStatus(lastActionTimestamp) {
+            if (!lastActionTimestamp) return "был активен более вечности назад";
+            const diffSec = getAATSecondPrecise() - lastActionTimestamp;
+            if (diffSec <= 86400) return "сейчас активен";
+            if (diffSec <= 4 * 30 * 86400) return "был активен недавно";
+            if (diffSec <= 24 * 30 * 86400) return "был активен давно";
+            if (diffSec <= 240 * 30 * 86400) return "был активен очень давно";
+            return "был активен более вечности назад";
         }
 
         async function renderLeaderboard() {
@@ -1566,62 +1464,42 @@
             tbody.innerHTML = '';
             
             try {
-                const res = await fetch('/api/leaderboard');
-                const allUsersRaw = await res.json();
+                const allUsersRaw = await fetchGlobalServerState();
                 const allUsers = [];
+                const curSec = getAATSecondPrecise();
 
                 allUsersRaw.forEach(item => {
-                    const uName = item.username;
                     const uData = item.data;
-
                     let capBN = uData.abs || createBN(100, 0);
-                    if (uData.deposits && uData.deposits.EUR) {
-                        capBN = addBN(capBN, uData.deposits.EUR);
-                    }
-                    const curSec = getAATSecondPrecise();
+                    if (uData.deposits && uData.deposits.EUR) capBN = addBN(capBN, uData.deposits.EUR);
+                    
                     ['AITH','SOFF','BIOM','VOID'].forEach(a => {
                         const priceBN = getAbsolutePriceAtSecond(curSec, a);
                         const shares = addBN(uData.assets && uData.assets[a] ? uData.assets[a] : createBN(0,0), uData.deposits && uData.deposits[a] ? uData.deposits[a] : createBN(0,0));
-                        const sharesVal = mulBN(shares, priceBN);
-                        capBN = addBN(capBN, sharesVal);
-
-                        if (uData.shorts && uData.shorts[a]) {
-                            const shortShares = uData.shorts[a];
-                            const openAvgBN = uData.shortAvgPrices[a] || priceBN;
-                            const initialValBN = mulBN(shortShares, openAvgBN);
-                            const currentValBN = mulBN(shortShares, priceBN);
-                            const shortPnlBN = subBN(initialValBN, currentValBN);
-                            capBN = addBN(capBN, shortPnlBN);
-                        }
+                        capBN = addBN(capBN, mulBN(shares, priceBN));
                     });
 
+                    let lastActionTime = uData.history && uData.history.length > 0 ? uData.history[0].timestamp : 0;
                     allUsers.push({
-                        name: uData.isAnon ? "Анонимный инвестор" : uName,
-                        capBN: capBN
+                        name: uData.isAnon ? "Анонимный инвестор" : item.username,
+                        capBN: capBN,
+                        status: getPlayerActivityStatus(lastActionTime)
                     });
                 });
 
                 allUsers.sort((a,b) => compareBN(b.capBN, a.capBN));
-
                 allUsers.forEach((u, idx) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>#${idx + 1}</td>
-                        <td><b>${u.name}</b></td>
-                        <td style="text-align:right; color:var(--accent-blue);">${formatBigNumberBN(u.capBN, 2)} €</td>
-                    `;
+                    tr.innerHTML = `<td>#${idx + 1}</td><td><b>${u.name}</b><br><span class="activity-badge">${u.status}</span></td><td style="text-align:right; color:var(--accent-blue);">${formatBigNumberBN(u.capBN, 2)} €</td>`;
                     tbody.appendChild(tr);
                 });
-            } catch (e) {
-                console.error('Ошибка загрузки таблицы лидеров:', e);
-            }
+            } catch (e) {}
         }
 
         function executeTrade(action) {
             const curSec = getAATSecondPrecise();
             const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
-            const pctFraction = tradePercent / 100;
-            const pctBN = fromNumber(pctFraction);
+            const pctBN = fromNumber(tradePercent / 100);
 
             if (action === 'BUY_LONG') {
                 if (state.abs.m === 0) return;
@@ -1633,39 +1511,26 @@
                 const currentAvgBN = state.avgPrices[selectedAsset] || createBN(0,0);
 
                 const newTotalShares = addBN(currentShares, boughtShares);
-                const oldTotalCost = mulBN(currentShares, currentAvgBN);
-                const newTotalCost = addBN(oldTotalCost, spendEuro);
-                const newAvgPriceBN = divBN(newTotalCost, newTotalShares);
+                const newAvgPriceBN = divBN(addBN(mulBN(currentShares, currentAvgBN), spendEuro), newTotalShares);
 
                 state.assets[selectedAsset] = newTotalShares;
                 state.avgPrices[selectedAsset] = newAvgPriceBN;
                 state.abs = subBN(state.abs, spendEuro);
 
-                showToast(`ЛОНГ: Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedAsset} на ${formatBigNumberBN(spendEuro, 2)} €`);
-                addHistoryRecord('КУПИТЬ', `Купил ${selectedAsset} (${formatBigNumberBN(boughtShares, 4)} шт.)`, `-${formatBigNumberBN(spendEuro, 2)} €`, priceBN, state.abs);
-
+                showToast(`ЛОНГ: Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedAsset}`);
+                addHistoryRecord('КУПИТЬ', `Купил ${selectedAsset} (${formatBigNumberBN(boughtShares, 4)} шт.)`, `-${formatBigNumberBN(spendEuro, 2)} €`, priceBN, state.abs, selectedAsset, 1.0);
+            
             } else if (action === 'SELL_LONG_PART' || action === 'SELL_LONG_ALL') {
                 const ownedShares = state.assets[selectedAsset] || createBN(0,0);
-
-                if (ownedShares.m === 0) {
-                    showToast(`Нет акций ${selectedAsset} в лонге`);
-                    return;
-                }
+                if (ownedShares.m === 0) { showToast(`Нет акций ${selectedAsset} в лонге`); return; }
 
                 const percent = action === 'SELL_LONG_ALL' ? 100 : tradePercent;
-                let sellShares;
-                if (percent >= 100) {
-                    sellShares = ownedShares;
-                } else {
-                    sellShares = mulBN(ownedShares, fromNumber(percent / 100));
-                }
-
+                const sellShares = percent >= 100 ? ownedShares : mulBN(ownedShares, fromNumber(percent / 100));
                 if (sellShares.m === 0) return;
 
                 const gainEuro = mulBN(sellShares, priceBN);
                 const avgPriceBN = state.avgPrices[selectedAsset] || priceBN;
-                const costBasisBN = mulBN(sellShares, avgPriceBN);
-                const profitEuroBN = subBN(gainEuro, costBasisBN);
+                const profitEuroBN = subBN(gainEuro, mulBN(sellShares, avgPriceBN));
 
                 state.assets[selectedAsset] = subBN(ownedShares, sellShares);
                 state.abs = addBN(state.abs, gainEuro);
@@ -1675,10 +1540,9 @@
                     state.avgPrices[selectedAsset] = createBN(0,0);
                 }
 
-                const profitSign = profitEuroBN.m >= 0 ? '+' : '';
-                showToast(`Продано ${formatBigNumberBN(sellShares, 4)} акц. Выручка: +${formatBigNumberBN(gainEuro, 2)} € (PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`);
-                addHistoryRecord('ПРОДАТЬ', `Продал ${selectedAsset} (${formatBigNumberBN(sellShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `+${formatBigNumberBN(gainEuro, 2)} €`, priceBN, state.abs);
-
+                showToast(`Продано ${formatBigNumberBN(sellShares, 4)} акц. Выручка: +${formatBigNumberBN(gainEuro, 2)} €`);
+                addHistoryRecord('ПРОДАТЬ', `Продал ${selectedAsset} (${formatBigNumberBN(sellShares, 4)} шт.)`, `+${formatBigNumberBN(gainEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100);
+            
             } else if (action === 'OPEN_SHORT') {
                 if (state.abs.m === 0) return;
                 const marginEuro = mulBN(state.abs, pctBN);
@@ -1689,33 +1553,22 @@
                 const curShortAvgBN = state.shortAvgPrices[selectedAsset] || createBN(0,0);
 
                 const newShortShares = addBN(curShortShares, shortShares);
-                const oldTotalShortCost = mulBN(curShortShares, curShortAvgBN);
-                const newTotalShortCost = addBN(oldTotalShortCost, marginEuro);
-                const newShortAvgBN = divBN(newTotalShortCost, newShortShares);
+                const newShortAvgBN = divBN(addBN(mulBN(curShortShares, curShortAvgBN), marginEuro), newShortShares);
 
                 state.shorts[selectedAsset] = newShortShares;
                 state.shortAvgPrices[selectedAsset] = newShortAvgBN;
-                state.abs = subBN(state.abs, marginEuro); // Списание маржи
+                state.shortMargins[selectedAsset] = addBN(state.shortMargins[selectedAsset] || createBN(0,0), marginEuro);
+                state.abs = subBN(state.abs, marginEuro);
 
-                showToast(`ШОРТ: Открыта позиция ${formatBigNumberBN(shortShares, 4)} акц. ${selectedAsset} по ${formatBigNumberBN(priceBN, 2)} €`);
-                addHistoryRecord('ОТКРЫТЬ ШОРТ', `Шорт ${selectedAsset} (${formatBigNumberBN(shortShares, 4)} шт.)`, `-${formatBigNumberBN(marginEuro, 2)} €`, priceBN, state.abs);
-
+                showToast(`ШОРТ: Открыта позиция ${formatBigNumberBN(shortShares, 4)} акц. ${selectedAsset}`);
+                addHistoryRecord('ОТКРЫТЬ ШОРТ', `Шорт ${selectedAsset} (${formatBigNumberBN(shortShares, 4)} шт.)`, `-${formatBigNumberBN(marginEuro, 2)} €`, priceBN, state.abs, selectedAsset, 1.0);
+            
             } else if (action === 'CLOSE_SHORT_PART' || action === 'CLOSE_SHORT_ALL') {
                 const shortShares = state.shorts[selectedAsset] || createBN(0,0);
-
-                if (shortShares.m === 0) {
-                    showToast(`Нет открытых Шорт-позиций по ${selectedAsset}`);
-                    return;
-                }
+                if (shortShares.m === 0) { showToast(`Нет открытых шортов по ${selectedAsset}`); return; }
 
                 const percent = action === 'CLOSE_SHORT_ALL' ? 100 : tradePercent;
-                let closeShares;
-                if (percent >= 100) {
-                    closeShares = shortShares;
-                } else {
-                    closeShares = mulBN(shortShares, fromNumber(percent / 100));
-                }
-
+                const closeShares = percent >= 100 ? shortShares : mulBN(shortShares, fromNumber(percent / 100));
                 if (closeShares.m === 0) return;
 
                 const openAvgBN = state.shortAvgPrices[selectedAsset] || priceBN;
@@ -1723,20 +1576,25 @@
                 const currentValBN = mulBN(closeShares, priceBN);
                 const profitEuroBN = subBN(initialValBN, currentValBN);
 
-                // Возврат маржи + PnL
-                const returnEuro = addBN(initialValBN, profitEuroBN);
-                state.abs = addBN(state.abs, returnEuro);
-                if (state.abs.m < 0) state.abs = createBN(0,0);
+                const currentMarginBN = state.shortMargins[selectedAsset] || initialValBN;
+                const closeRatioBN = divBN(closeShares, shortShares);
+                const releasedMarginBN = mulBN(currentMarginBN, closeRatioBN);
 
+                let returnEuro = addBN(releasedMarginBN, profitEuroBN);
+                if (returnEuro.m < 0) returnEuro = createBN(0, 0);
+
+                state.abs = addBN(state.abs, returnEuro);
+                state.shortMargins[selectedAsset] = subBN(currentMarginBN, releasedMarginBN);
                 state.shorts[selectedAsset] = subBN(shortShares, closeShares);
+
                 if (state.shorts[selectedAsset].m === 0) {
                     state.shorts[selectedAsset] = createBN(0,0);
                     state.shortAvgPrices[selectedAsset] = createBN(0,0);
+                    state.shortMargins[selectedAsset] = createBN(0,0);
                 }
 
-                const profitSign = profitEuroBN.m >= 0 ? '+' : '';
-                showToast(`ШОРТ ЗАКРЫТ: ${formatBigNumberBN(closeShares, 4)} акц. PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €`);
-                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт Шорт ${selectedAsset} (${formatBigNumberBN(closeShares, 4)} шт., PnL: ${profitSign}${formatBigNumberBN(profitEuroBN, 2)} €)`, `+${formatBigNumberBN(returnEuro, 2)} €`, priceBN, state.abs);
+                showToast(`ШОРТ ЗАКРЫТ: Выручено +${formatBigNumberBN(returnEuro, 2)} €`);
+                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт шорт ${selectedAsset}`, `+${formatBigNumberBN(returnEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100);
             }
 
             saveProfile();
@@ -1745,55 +1603,26 @@
         }
 
         window.onload = async () => {
+            await syncServerTime();
             initChart();
             renderTradeButtons();
             renderDepositButtons();
-            
             setInterval(updateAATClockFast, 50);
             setInterval(updateChartTick, 500);
 
-            // Автологин последнего сохраненного профиля без запроса пароля при перезагрузке
             const lastUser = localStorage.getItem('exchange_eur_last_user');
             if (lastUser) {
                 try {
                     const res = await fetch(`/api/user/${encodeURIComponent(lastUser)}`);
-                    const result = await res.json();
-                    if (result.found) {
-                        loadProfile(lastUser);
-                        return;
-                    }
+                    if ((await res.json()).found) { loadProfile(lastUser); return; }
                 } catch (e) {}
             }
-
-            // Если сессии нет — показываем окно входа
             document.getElementById('authModal').classList.remove('hidden');
         };
 
         async function login() {
-            const input = document.getElementById('usernameInput');
-            const name = input.value.trim();
+            const name = document.getElementById('usernameInput').value.trim();
             if (!name) return;
-
-            try {
-                const res = await fetch(`/api/user/${encodeURIComponent(name)}`);
-                const result = await res.json();
-
-                if (result.found && result.data && result.data.password) {
-                    const pwdBlock = document.getElementById('pwdAuthBlock');
-                    if (pwdBlock.classList.contains('hidden')) {
-                        pwdBlock.classList.remove('hidden');
-                        showToast("Внимание: этот аккаунт защищен паролем!");
-                        return;
-                    } else {
-                        const pwdInput = document.getElementById('userPwdInput').value;
-                        if (pwdInput !== result.data.password) {
-                            showToast("Неверный пароль!");
-                            return;
-                        }
-                    }
-                }
-            } catch (e) {}
-
             localStorage.setItem('exchange_eur_last_user', name);
             document.getElementById('authModal').classList.add('hidden');
             loadProfile(name);
@@ -1807,28 +1636,13 @@
             try {
                 const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
                 const result = await res.json();
+                if (result.found && result.data) state = result.data;
+                else resetDefaultState();
+            } catch (e) { resetDefaultState(); }
 
-                if (result.found && result.data) {
-                    state = result.data;
-                } else {
-                    resetDefaultState();
-                }
-            } catch (e) {
-                console.error('Ошибка загрузки:', e);
-                resetDefaultState();
-            }
-
-            if (!state.abs) state.abs = { m: 1.0, e: 2 };
-            if (!state.assets) state.assets = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
-            if (!state.avgPrices) state.avgPrices = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
-            if (!state.shorts) state.shorts = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
-            if (!state.shortAvgPrices) state.shortAvgPrices = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} };
-            if (!state.deposits) state.deposits = { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} };
-            if (!state.deposits.EUR) state.deposits.EUR = {m:0,e:0};
-            if (!state.deposits.VOID) state.deposits.VOID = {m:0,e:0};
-            if (!state.lastDepTime) state.lastDepTime = Date.now();
-            if (!state.loanAmount) state.loanAmount = {m:0,e:0};
-            if (!Array.isArray(state.history)) state.history = [];
+            if (!state.loanDebtBN) state.loanDebtBN = createBN(0,0);
+            if (!state.loanTakenMonthBN) state.loanTakenMonthBN = createBN(0,0);
+            if (!state.maxCapitalLast4Months) state.maxCapitalLast4Months = createBN(0,0);
 
             updateUI();
             updateChartTick();
@@ -1842,9 +1656,14 @@
                 avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
                 shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
                 shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+                shortMargins: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
                 deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
                 lastDepTime: Date.now(),
-                loanAmount: { m: 0, e: 0 },
+                hasTakenLoan: false,
+                loanDebtBN: { m: 0, e: 0 },
+                loanTakenMonthBN: { m: 0, e: 0 },
+                lastLoanMonthReset: 0,
+                maxCapitalLast4Months: { m: 0, e: 0 },
                 password: "",
                 isAnon: false,
                 history: []
@@ -1859,9 +1678,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(state)
                     });
-                } catch (e) {
-                    console.error('Ошибка сохранения:', e);
-                }
+                } catch (e) {}
             }
         }
 
@@ -1869,9 +1686,7 @@
             saveProfile();
             localStorage.removeItem('exchange_eur_last_user');
             currentUser = null;
-            document.getElementById('userPwdInput').value = '';
-            document.getElementById('pwdAuthBlock').classList.add('hidden');
-            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('authModal').classList.add('hidden');
         }
 
         function openSettings() {
@@ -1881,10 +1696,7 @@
             document.getElementById('userDropdown').classList.remove('active');
         }
 
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.add('hidden');
-        }
-
+        function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
         function saveSettings() {
             state.password = document.getElementById('setPwdInput').value;
             state.isAnon = document.getElementById('setAnonSelect').value === 'anon';
@@ -1894,67 +1706,33 @@
         }
 
         function updateUI() {
-            const absElem = document.getElementById('absDisplay');
-            absElem.innerText = formatBigNumberBN(state.abs, 2) + ' €';
-
-            checkLoanStatus();
+            document.getElementById('absDisplay').innerText = formatBigNumberBN(state.abs, 2) + ' €';
             updateDepositUI();
             updateBalanceGridAssets();
             updateCapitalizationDisplay();
             renderHistory();
         }
 
-// --- БЛОК СИНХРОНИЗАЦИИ ДЛЯ УСТРАНЕНИЯ РАССИНХРОНА ---
+function getAATCalendarDate(secInput) {
+    let sec = Math.floor(secInput);
+    let totalDays = Math.floor(sec / 86400);
+    let secOfCurrentDay = sec % 86400;
 
-let isUserBusy = false; // Флаг, чтобы не дергать интерфейс во время ввода
-
-// 1. Функция получения свежих данных с сервера
-async function syncWithServer() {
-    if (!state.username || state.isAnon || isUserBusy) return;
-    try {
-        const response = await fetch(`/api/user/${encodeURIComponent(state.username)}`);
-        if (response.ok) {
-            const serverData = await response.json();
-            if (serverData && serverData.data) {
-                const parsed = typeof serverData.data === 'string' ? JSON.parse(serverData.data) : serverData.data;
-                const currentPwd = state.password;
-                Object.assign(state, parsed);
-                state.password = currentPwd;
-                if (typeof updateUI === 'function') updateUI();
-            }
-        }
-    } catch (e) {
-        console.error("Ошибка синхронизации:", e);
+    let year = 2466;
+    while (true) {
+        let dInYear = getDaysInYear(year);
+        if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
     }
+
+    let month = 1;
+    while (month <= 12) {
+        let dInMonth = getDaysInMonth(year, month);
+        if (totalDays >= dInMonth) { totalDays -= dInMonth; month++; } else break;
+    }
+
+    let day = totalDays + 1;
+    return { year, month, day, secondsOfDay: secOfCurrentDay };
 }
-
-// 2. Автоматический опрос сервера каждые 1.5 секунды
-setInterval(() => {
-    syncWithServer();
-}, 1500);
-
-// 3. Мгновенная синхронизация при возвращении на вкладку
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-        syncWithServer();
-    }
-});
-
-// 4. Синхронизация перед важными действиями + защита от сброса инпутов
-['executeTrade', 'openShort', 'closeShort', 'makeDeposit', 'withdrawDeposit'].forEach(funcName => {
-    if (window[funcName] && typeof window[funcName] === 'function') {
-        const originalFunc = window[funcName];
-        window[funcName] = async function(...args) {
-            isUserBusy = true;
-            await syncWithServer();
-            try {
-                return await originalFunc.apply(this, args);
-            } finally {
-                isUserBusy = false;
-            }
-        };
-    }
-});
 
     </script>
 </body>

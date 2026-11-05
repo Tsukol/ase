@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'users_db.json');
 
 app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // === ХРАНИЛИЩЕ В ПАМЯТИ И ЛОКАЛЬНАЯ БД ===
 let usersData = {}; // Ключ — имя пользователя (username)

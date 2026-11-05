@@ -3,9 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ainalandia Stock Exchange (ASE) v1.2.4</title>
+    <title>Ainalandia Stock Exchange (ASE) v1.3.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* --- Стили для модальных окон v1.3.0 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: #121620;
+            border: 1px solid #1f293d;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #e2e8f0;
+            font-family: inherit;
+        }
+        .modal-box h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 22px;
+            color: #38bdf8;
+            text-align: center;
+        }
+        .modal-info-box {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 3px solid #38bdf8;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #bae6fd;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            line-height: 1.4;
+        }
+        .modal-input-group {
+            margin-bottom: 15px;
+        }
+        .modal-input-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+        .modal-input-group input, .modal-input-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0b0f17;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .modal-input-group input:focus, .modal-input-group textarea:focus {
+            border-color: #38bdf8;
+            outline: none;
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 5px;
+        }
+        .modal-btn:hover { opacity: 0.9; }
+        .modal-error {
+            color: #f87171;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .profile-avatar-preview {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .emoji-picker-grid {
+            display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .emoji-option {
+            cursor: pointer; font-size: 22px; padding: 6px; background: #1e293b; border-radius: 6px; border: 1px solid transparent;
+        }
+        .emoji-option:hover, .emoji-option.selected { border-color: #38bdf8; background: #334155; }
+        .color-picker-grid {
+            display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;
+        }
+        .color-option {
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+        }
+        .color-option.selected { border-color: #fff; transform: scale(1.1); }
+
         :root {
             --bg-color: #0b0f19;
             --card-bg: #151d30;
@@ -178,46 +281,99 @@
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #151d30; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--accent-blue); opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); white-space: nowrap; }
         .toast.show { opacity: 1; top: 30px; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: var(--card-bg); border: 1px solid var(--border-color); padding: 24px; border-radius: 16px; width: 90%; max-width: 340px; position: relative; }
-        .modal input, .modal select { width: 100%; padding: 10px; margin: 8px 0 16px 0; background: #000; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="authModal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 style="text-align: center; margin-bottom: 8px;">Вход на биржу (ASE)</h3>
-            <form onsubmit="event.preventDefault(); login();">
-                <label style="font-size:0.75rem; color:var(--text-muted);">Имя инвестора</label>
-                <input type="text" id="usernameInput" placeholder="Имя инвестора..." maxlength="15" required>
-                <div id="pwdAuthBlock" class="hidden">
-                    <label style="font-size:0.75rem; color:var(--text-muted);">Пароль аккаунта</label>
-                    <input type="password" id="userPwdInput" placeholder="Введите пароль">
-                </div>
-                <button type="submit" class="btn-action btn-buy" style="width: 100%;">Войти в систему</button>
-            </form>
+    <!-- МОДАЛКА ВХОДА / РЕГИСТРАЦИИ v1.3.0 (ВНУТРИ BODY) -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>🔑 Вход в ASE v1.3.0</h2>
+            <div class="modal-info-box">
+                Если аккаунта еще нет или он без пароля — введенный пароль закрепится за вами. Если аккаунт существует — введите действующий пароль.
+            </div>
+            <div class="modal-input-group">
+                <label>Никнейм игрока:</label>
+                <input type="text" id="loginUsernameInput" placeholder="Введите ник..." maxlength="20">
+            </div>
+            <div class="modal-input-group">
+                <label>Пароль:</label>
+                <input type="password" id="loginPasswordInput" placeholder="Введите пароль...">
+            </div>
+            <button class="modal-btn" onclick="performLogin()">Войти / Создать</button>
+            <div id="loginErrorMsg" class="modal-error"></div>
         </div>
     </div>
 
-    <div id="settingsModal" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 style="text-align: center; margin-bottom: 12px;">Настройки профиля</h3>
-            <label style="font-size:0.75rem; color:var(--text-muted);">Установить/изменить пароль</label>
-            <input type="password" id="setPwdInput" placeholder="Оставьте пустым для отмены">
-            
-            <label style="font-size:0.75rem; color:var(--text-muted);">Видимость в списке лидеров</label>
-            <select id="setAnonSelect">
-                <option value="public">Показывать мой ник</option>
-                <option value="anon">Анонимно</option>
-            </select>
-            
-            <div style="display:flex; gap:8px;">
-                <button class="btn-action btn-sell" style="flex:1;" onclick="closeSettings()">Отмена</button>
-                <button class="btn-action btn-buy" style="flex:1;" onclick="saveSettings()">Сохранить</button>
+    <!-- МОДАЛКА ПРОФИЛЬ И НАСТРОЙКИ (ВНУТРИ BODY) -->
+    <div id="profileModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 460px;">
+            <h2>👤 Профиль трейдера</h2>
+            <div id="profileAvatarPreview" class="profile-avatar-preview" style="background: #00f2fe;">👤</div>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div><span id="profileDisplayName" style="font-size: 18px; font-weight: bold; color: #fff;">Трейдер</span> <strong id="profileDisplayTag" style="color: #38bdf8; font-size: 16px;">#000</strong></div>
+                <div id="profileDisplayCapital" style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Текущий: 0 € | Пиковый: 0 €</div>
             </div>
+
+            <div class="modal-input-group">
+                <label>Никнейм игрока:</label>
+                <input type="text" id="profileUsernameInput" placeholder="Введите новый ник..." maxlength="20">
+            </div>
+
+            <div class="modal-input-group">
+                <label>Выбрать эмодзи-аватар:</label>
+                <div class="emoji-picker-grid" id="emojiPickerGrid">
+                    <span class="emoji-option" onclick="selectEmoji('👤')">👤</span>
+                    <span class="emoji-option" onclick="selectEmoji('🦊')">🦊</span>
+                    <span class="emoji-option" onclick="selectEmoji('🚀')">🚀</span>
+                    <span class="emoji-option" onclick="selectEmoji('💎')">💎</span>
+                    <span class="emoji-option" onclick="selectEmoji('👑')">👑</span>
+                    <span class="emoji-option" onclick="selectEmoji('📈')">📈</span>
+                </div>
+            </div>
+
+            <div class="modal-input-group">
+                <label>Цвет фона аватара:</label>
+                <div class="color-picker-grid" id="colorPickerGrid">
+                    <div class="color-option" style="background: #00f2fe;" onclick="selectColor('#00f2fe')"></div>
+                    <div class="color-option" style="background: #10b981;" onclick="selectColor('#10b981')"></div>
+                    <div class="color-option" style="background: #f59e0b;" onclick="selectColor('#f59e0b')"></div>
+                    <div class="color-option" style="background: #ef4444;" onclick="selectColor('#ef4444')"></div>
+                    <div class="color-option" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6')"></div>
+                    <div class="color-option" style="background: #ec4899;" onclick="selectColor('#ec4899')"></div>
+                </div>
+            </div>
+
+            <div class="modal-input-group">
+                <label>Биография / О себе (до 256 символов):</label>
+                <textarea id="profileBioInput" rows="3" maxlength="256" placeholder="Пару слов о вашей стратегии..."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="modal-btn" style="background: #334155;" onclick="openChangePasswordModal()">Сменить пароль</button>
+                <button class="modal-btn" onclick="saveProfileChanges()">Сохранить</button>
+            </div>
+            <button class="modal-btn" style="background: #1e293b; border: 1px solid #334155; margin-top: 8px;" onclick="closeProfileModal()">Закрыть</button>
+        </div>
+    </div>
+    
+
+    <!-- МОДАЛКА СМЕНЫ ПАРОЛЯ (ВНУТРИ BODY) -->
+    <div id="changePassModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box" style="max-width: 380px;">
+            <h2>🔒 Смена пароля</h2>
+            <div class="modal-input-group">
+                <label>Старый пароль:</label>
+                <input type="password" id="oldPassInput">
+            </div>
+            <div class="modal-input-group">
+                <label>Новый пароль (мин. 3 символа):</label>
+                <input type="password" id="newPassInput">
+            </div>
+            <button class="modal-btn" onclick="submitChangePassword()">Подтвердить смену</button>
+            <div id="passErrorMsg" class="modal-error"></div>
+            <button class="modal-btn" style="background: #1e293b; border: 1px solid #334155; margin-top: 8px;" onclick="closeChangePasswordModal()">Назад в профиль</button>
         </div>
     </div>
 
@@ -230,13 +386,13 @@
                     <span style="font-size:0.7rem; color:var(--text-muted);">▾</span>
                 </div>
                 <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-item" onclick="openProfileModal()">👤 Профиль и настройки</div>
                     <div class="dropdown-item" onclick="switchTab('historyTab')">📜 История сделок</div>
-                    <div class="dropdown-item" onclick="switchTab('leaderTab')">🏆 Список лучших трейдеров</div>
-                    <div class="dropdown-item" onclick="openSettings()">⚙️ Настройки профиля</div>
+                    <div class="dropdown-item" onclick="switchTab('leaderTab')">🏆 Список лидеров</div>
                     <div class="dropdown-item" onclick="switchUser()">🚪 Сменить профиль</div>
                 </div>
             </div>
-            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.2.4</div>
+            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.3.0</div>
         </div>
 
         <div class="aat-clock" id="aatClockDisplay">Время по AAT: Загрузка...</div>
@@ -461,10 +617,10 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 6: СПИСОК ЛУЧШИХ ТРЕЙДЕРОВ -->
+        <!-- ВКЛАДКА 6: 🏆 Список лидеров -->
         <div id="leaderTab" class="tab-content hidden">
             <div class="leader-card">
-                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🏆 Список лучших трейдеров</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🏆 Список лидеров</div>
                 <table class="leader-table">
                     <thead>
                         <tr>
@@ -483,6 +639,7 @@
 
     <script>
         let currentUser = null;
+        let currentPassword = '';
         let selectedAsset = 'AITH';
         let selectedDepAsset = 'AITH';
         let tradeMode = 'LONG';
@@ -490,6 +647,9 @@
         let depPercent = 100;
         let loanPercent = 100;
         let chartInstance = null;
+        let tempSelectedEmoji = '👤';
+        let tempSelectedColor = '#00f2fe';
+        let currentUserTag = '#TAG';
         
         const TICK_INTERVAL_SECONDS = 12;
         const ITEMS_PER_PAGE = 25;
@@ -675,7 +835,7 @@
         const EUR_DEP_RATE = Math.pow(1.03, 1 / SECONDS_IN_MONTH);
 
         let state = {
-            abs: { m: 1.0, e: 2 },
+            abs: { m: 0, e: 0 },
             assets: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
@@ -913,18 +1073,16 @@
             return compareBN(calculatedLimit, minLimitBN) > 0 ? calculatedLimit : minLimitBN;
         }
 
-function checkMonthlyLoanReset() {
-    const curSec = getAATSecondPrecise();
-    const cal = getAATCalendarDate(curSec);
-    
-    // Уникальный числовой индекс месяца (например, год * 12 + месяц)
-    const currentMonthKey = cal.year * 12 + cal.month;
+        function checkMonthlyLoanReset() {
+            const curSec = getAATSecondPrecise();
+            const cal = getAATCalendarDate(curSec);
+            const currentMonthKey = cal.year * 12 + cal.month;
 
-    if (!state.lastLoanMonthReset || state.lastLoanMonthReset < currentMonthKey) {
-        state.loanTakenMonthBN = createBN(0, 0);
-        state.lastLoanMonthReset = currentMonthKey;
-    }
-}
+            if (!state.lastLoanMonthReset || state.lastLoanMonthReset < currentMonthKey) {
+                state.loanTakenMonthBN = createBN(0, 0);
+                state.lastLoanMonthReset = currentMonthKey;
+            }
+        }
 
         function updateLoanSlider(val) {
             loanPercent = parseInt(val);
@@ -1085,6 +1243,10 @@ function checkMonthlyLoanReset() {
             updateCapitalizationDisplay();
         }
 
+
+
+
+
         function updateCapitalizationDisplay() {
             const curSec = getAATSecondPrecise();
             let capBN = state.abs || createBN(100, 0);
@@ -1110,12 +1272,33 @@ function checkMonthlyLoanReset() {
             document.getElementById('capitalizationDisplay').innerText = formatBigNumberBN(capBN, 2) + ' €';
 
             const bonusBanner = document.getElementById('bonusBanner');
-            if (!state.hasTakenLoan && compareBN(state.abs, createBN(0,0)) === 0) {
+            const currentAbsNum = toNumberBN(state.abs);
+            
+            // Баннер виден ТОЛЬКО если бонус еще не был получен И текущий баланс строго 0 (или нет активных сделок/депозитов)
+            if (!state.hasClaimedBonus && currentAbsNum === 0) {
                 bonusBanner.classList.remove('hidden');
             } else {
                 bonusBanner.classList.add('hidden');
             }
         }
+
+        function claimStarterBonus() {
+            if (state.hasClaimedBonus) {
+                showToast('Стартовый бонус уже был получен!');
+                document.getElementById('bonusBanner').classList.add('hidden');
+                return;
+            }
+
+            state.hasClaimedBonus = true;
+            state.abs = addBN(state.abs || createBN(0,0), createBN(1.0, 2)); // Корректно добавляем 100 € к текущему балансу
+            document.getElementById('bonusBanner').classList.add('hidden');
+            showToast('🎁 Вам зачислен стартовый бонус 100.00 €!');
+            
+            addHistoryRecord('БОНУС', 'Получен стартовый капитал', '+100.00 €', createBN(1, 0), state.abs, 'EUR');
+            saveProfile();
+            updateUI();
+        }
+
 
         function updateBalanceGridAssets() {
             const curSec = getAATSecondPrecise();
@@ -1375,7 +1558,7 @@ function checkMonthlyLoanReset() {
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN, assetSymbol, tradeWeight) {
+        function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN, assetSymbol, tradeWeight, pnlPercentStr) {
             if (!Array.isArray(state.history)) state.history = [];
             const currentAATSec = getAATSecondPrecise();
             
@@ -1388,7 +1571,8 @@ function checkMonthlyLoanReset() {
                 datetime: `${formatAATTimestamp(currentAATSec, true)} AAT`,
                 timestamp: currentAATSec,
                 asset: assetSymbol || selectedAsset,
-                weight: tradeWeight !== undefined ? tradeWeight : 1.0
+                weight: tradeWeight !== undefined ? tradeWeight : 1.0,
+                pnlPercent: pnlPercentStr || ''
             });
 
             if (state.history.length > MAX_PAGES * ITEMS_PER_PAGE) state.history.pop();
@@ -1404,20 +1588,43 @@ function checkMonthlyLoanReset() {
             renderFullHistory();
         }
 
+
+
+
+
         function renderHistory() {
             const list = document.getElementById('historyList');
             if (!list) return;
+
             if (!state.history || state.history.length === 0) {
                 list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 12px;">Сделок пока нет</div>';
                 return;
             }
+
+            const latestItems = state.history.slice(0, 10);
             let html = '';
-            state.history.slice(0, 10).forEach(item => {
-                const cls = item.type.includes('ШОРТ') ? 'short' : item.type.includes('КУПИТЬ') ? 'buy' : item.type.includes('КРЕДИТ') ? 'loan' : 'sell';
+            latestItems.forEach(item => {
+                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
+                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
+                const isDep = item.type.includes('ДЕПОЗИТ');
+                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
+                const balFormatted = formatBigNumberBN(item.balance, 2);
+                
+                // Дельта / PnL операции
+                const deltaVal = item.delta || '';
+                const deltaColor = deltaVal.startsWith('+') ? 'var(--accent-green)' : deltaVal.startsWith('-') ? 'var(--accent-red)' : 'inherit';
+                
+                // Процентный PnL (если присутствует в объекте сделки)
+                const percentVal = item.pnlPercent || item.percent || '';
+                const percentColor = percentVal.startsWith('+') ? 'var(--accent-green)' : percentVal.startsWith('-') ? 'var(--accent-red)' : 'inherit';
+                const percentHtml = percentVal ? `<span style="font-weight: bold; margin-right: 6px; color: ${percentColor};" title="PnL в процентах">${percentVal}</span>` : '';
+
                 html += `<div class="history-item ${cls}">
                     <span style="font-size: 0.65rem; color: var(--text-muted);">[${item.datetime}]</span>
                     <span style="flex: 1; margin-left: 6px; font-size: 0.75rem;"><b>${item.type}</b>: ${item.desc}</span>
-                    <span style="font-weight: bold; color: var(--accent-blue);">${formatBigNumberBN(item.balance, 2)} €</span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
+                    ${percentHtml}<span style="font-weight: bold; margin-right:6px; color:${deltaColor};" title="Изменение / PnL">${deltaVal}</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
                 </div>`;
             });
             list.innerHTML = html;
@@ -1435,18 +1642,41 @@ function checkMonthlyLoanReset() {
             }
 
             const totalPages = Math.ceil(state.history.length / ITEMS_PER_PAGE);
+            if (currentPage > totalPages) currentPage = totalPages;
             indicator.innerText = `Стр. ${currentPage} из ${totalPages}`;
+
+            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            const pageItems = state.history.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
             let html = '';
-            state.history.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(item => {
-                const cls = item.type.includes('ШОРТ') ? 'short' : item.type.includes('КУПИТЬ') ? 'buy' : item.type.includes('КРЕДИТ') ? 'loan' : 'sell';
+            pageItems.forEach(item => {
+                const isBuy = item.type === 'КУПИТЬ' || item.type === 'ЗАКРЫТЬ ШОРТ';
+                const isShort = item.type === 'ОТКРЫТЬ ШОРТ';
+                const isDep = item.type.includes('ДЕПОЗИТ');
+                const cls = isShort ? 'short' : isBuy ? 'buy' : isDep ? 'dep' : 'sell';
+                const balFormatted = formatBigNumberBN(item.balance, 2);
+                
+                const deltaVal = item.delta || '';
+                const deltaColor = deltaVal.startsWith('+') ? 'var(--accent-green)' : deltaVal.startsWith('-') ? 'var(--accent-red)' : 'inherit';
+                
+                // Процентный PnL (если присутствует в объекте сделки)
+                const percentVal = item.pnlPercent || item.percent || '';
+                const percentColor = percentVal.startsWith('+') ? 'var(--accent-green)' : percentVal.startsWith('-') ? 'var(--accent-red)' : 'inherit';
+                const percentHtml = percentVal ? `<span style="font-weight: bold; margin-right: 6px; color: ${percentColor};" title="PnL в процентах">${percentVal}</span>` : '';
+
                 html += `<div class="history-item ${cls}">
                     <span style="font-size: 0.7rem; color: var(--text-muted);">[${item.datetime}]</span>
                     <span style="flex: 1; margin-left: 8px;"><b>${item.type}</b>: ${item.desc}</span>
-                    <span style="font-weight: bold; color: var(--accent-blue);">${formatBigNumberBN(item.balance, 2)} €</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 8px;">Курс: ${item.price}</span>
+                    ${percentHtml}<span style="font-weight: bold; margin-right:8px; color:${deltaColor};" title="Изменение / PnL">${deltaVal}</span>
+                    <span style="font-weight: bold; color: var(--accent-blue);">${balFormatted} €</span>
                 </div>`;
             });
             list.innerHTML = html;
         }
+
+
+
 
         function getPlayerActivityStatus(lastActionTimestamp) {
             if (!lastActionTimestamp) return "был активен более вечности назад";
@@ -1464,37 +1694,44 @@ function checkMonthlyLoanReset() {
             tbody.innerHTML = '';
             
             try {
-                const allUsersRaw = await fetchGlobalServerState();
-                const allUsers = [];
-                const curSec = getAATSecondPrecise();
+                const res = await fetch('/api/leaderboard');
+                const allUsers = await res.json();
+                
+                // Сортируем пользователей по пиковому капиталу на клиенте для надежности
+                allUsers.sort((a, b) => compareBN(b.peakCap, a.peakCap));
 
-                allUsersRaw.forEach(item => {
-                    const uData = item.data;
-                    let capBN = uData.abs || createBN(100, 0);
-                    if (uData.deposits && uData.deposits.EUR) capBN = addBN(capBN, uData.deposits.EUR);
-                    
-                    ['AITH','SOFF','BIOM','VOID'].forEach(a => {
-                        const priceBN = getAbsolutePriceAtSecond(curSec, a);
-                        const shares = addBN(uData.assets && uData.assets[a] ? uData.assets[a] : createBN(0,0), uData.deposits && uData.deposits[a] ? uData.deposits[a] : createBN(0,0));
-                        capBN = addBN(capBN, mulBN(shares, priceBN));
-                    });
-
-                    let lastActionTime = uData.history && uData.history.length > 0 ? uData.history[0].timestamp : 0;
-                    allUsers.push({
-                        name: uData.isAnon ? "Анонимный инвестор" : item.username,
-                        capBN: capBN,
-                        status: getPlayerActivityStatus(lastActionTime)
-                    });
-                });
-
-                allUsers.sort((a,b) => compareBN(b.capBN, a.capBN));
                 allUsers.forEach((u, idx) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>#${idx + 1}</td><td><b>${u.name}</b><br><span class="activity-badge">${u.status}</span></td><td style="text-align:right; color:var(--accent-blue);">${formatBigNumberBN(u.capBN, 2)} €</td>`;
+                    const capFormatted = formatBigNumberBN(u.peakCap, 2);
+                    
+                    // Вычисляем реальный статус активности на основе времени последнего действия игрока
+                    const lastTime = u.lastActionTime || (u.state && u.state.history && u.state.history.length > 0 ? u.state.history[0].timestamp : 0);
+                    const statusText = getPlayerActivityStatus(lastTime);
+
+                    tr.innerHTML = `
+                        <td>#${idx + 1}</td>
+                        <td>
+                            <span style="display:inline-block; width:22px; height:22px; border-radius:50%; background:${u.color}; text-align:center; line-height:22px; font-size:12px; margin-right:4px;">${u.emoji}</span>
+                            <b>${u.username}</b> <span style="color:var(--text-muted); font-size:0.75rem;">${u.tag}</span><br>
+                            <span class="activity-badge" style="font-size: 0.68rem; color: var(--text-muted);">${statusText}</span>
+                        </td>
+                        <td style="text-align:right; color:var(--accent-blue);">${capFormatted} €</td>
+                    `;
                     tbody.appendChild(tr);
                 });
-            } catch (e) {}
+                
+                if(allUsers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Нет данных лидеров</td></tr>';
+                }
+            } catch (e) {
+                console.error('[Leaderboard] Ошибка загрузки:', e);
+            }
         }
+
+
+
+
+
 
         function executeTrade(action) {
             const curSec = getAATSecondPrecise();
@@ -1516,6 +1753,7 @@ function checkMonthlyLoanReset() {
                 state.assets[selectedAsset] = newTotalShares;
                 state.avgPrices[selectedAsset] = newAvgPriceBN;
                 state.abs = subBN(state.abs, spendEuro);
+                state.lastActionTime = getAATSecondPrecise();
 
                 showToast(`ЛОНГ: Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedAsset}`);
                 addHistoryRecord('КУПИТЬ', `Купил ${selectedAsset} (${formatBigNumberBN(boughtShares, 4)} шт.)`, `-${formatBigNumberBN(spendEuro, 2)} €`, priceBN, state.abs, selectedAsset, 1.0);
@@ -1530,7 +1768,12 @@ function checkMonthlyLoanReset() {
 
                 const gainEuro = mulBN(sellShares, priceBN);
                 const avgPriceBN = state.avgPrices[selectedAsset] || priceBN;
-                const profitEuroBN = subBN(gainEuro, mulBN(sellShares, avgPriceBN));
+                const costBasisBN = mulBN(sellShares, avgPriceBN);
+                const profitEuroBN = subBN(gainEuro, costBasisBN);
+                
+                // Рассчитываем PnL в процентах для сделки продажи
+                const pnlPercent = costBasisBN.m > 0 ? (toNumberBN(divBN(profitEuroBN, costBasisBN))) * 100 : 0;
+                const pnlPercentStr = (pnlPercent >= 0 ? '+' : '') + pnlPercent.toFixed(1) + '%';
 
                 state.assets[selectedAsset] = subBN(ownedShares, sellShares);
                 state.abs = addBN(state.abs, gainEuro);
@@ -1541,7 +1784,7 @@ function checkMonthlyLoanReset() {
                 }
 
                 showToast(`Продано ${formatBigNumberBN(sellShares, 4)} акц. Выручка: +${formatBigNumberBN(gainEuro, 2)} €`);
-                addHistoryRecord('ПРОДАТЬ', `Продал ${selectedAsset} (${formatBigNumberBN(sellShares, 4)} шт.)`, `+${formatBigNumberBN(gainEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100);
+                addHistoryRecord('ПРОДАТЬ', `Продал ${selectedAsset} (${formatBigNumberBN(sellShares, 4)} шт.)`, `+${formatBigNumberBN(gainEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100, pnlPercentStr);
             
             } else if (action === 'OPEN_SHORT') {
                 if (state.abs.m === 0) return;
@@ -1576,6 +1819,10 @@ function checkMonthlyLoanReset() {
                 const currentValBN = mulBN(closeShares, priceBN);
                 const profitEuroBN = subBN(initialValBN, currentValBN);
 
+                // Рассчитываем PnL в процентах для закрытия шорта
+                const pnlPercent = initialValBN.m > 0 ? (toNumberBN(divBN(profitEuroBN, initialValBN))) * 100 : 0;
+                const pnlPercentStr = (pnlPercent >= 0 ? '+' : '') + pnlPercent.toFixed(1) + '%';
+
                 const currentMarginBN = state.shortMargins[selectedAsset] || initialValBN;
                 const closeRatioBN = divBN(closeShares, shortShares);
                 const releasedMarginBN = mulBN(currentMarginBN, closeRatioBN);
@@ -1594,7 +1841,7 @@ function checkMonthlyLoanReset() {
                 }
 
                 showToast(`ШОРТ ЗАКРЫТ: Выручено +${formatBigNumberBN(returnEuro, 2)} €`);
-                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт шорт ${selectedAsset}`, `+${formatBigNumberBN(returnEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100);
+                addHistoryRecord('ЗАКРЫТЬ ШОРТ', `Закрыт шорт ${selectedAsset}`, `+${formatBigNumberBN(returnEuro, 2)} €`, priceBN, state.abs, selectedAsset, percent / 100, pnlPercentStr);
             }
 
             saveProfile();
@@ -1602,7 +1849,13 @@ function checkMonthlyLoanReset() {
             updateChartTick();
         }
 
-        window.onload = async () => {
+
+
+
+
+
+        // --- СКРИПТЫ АВТОРИЗАЦИИ И ПРОФИЛЯ v1.3.0 (БЕЗ ДУБЛИКАТОВ ПЕРЕМЕННЫХ) ---
+        window.addEventListener('DOMContentLoaded', async () => {
             await syncServerTime();
             initChart();
             renderTradeButtons();
@@ -1610,130 +1863,281 @@ function checkMonthlyLoanReset() {
             setInterval(updateAATClockFast, 50);
             setInterval(updateChartTick, 500);
 
-            const lastUser = localStorage.getItem('exchange_eur_last_user');
-            if (lastUser) {
-                try {
-                    const res = await fetch(`/api/user/${encodeURIComponent(lastUser)}`);
-                    if ((await res.json()).found) { loadProfile(lastUser); return; }
-                } catch (e) {}
+            const savedName = localStorage.getItem('ase_username');
+            const savedPass = localStorage.getItem('ase_password');
+            if (savedName && savedPass) {
+                autoLogin(savedName, savedPass);
+            } else {
+                document.getElementById('loginModal').style.display = 'flex';
             }
-            document.getElementById('authModal').classList.remove('hidden');
-        };
+        });
 
-        async function login() {
-            const name = document.getElementById('usernameInput').value.trim();
-            if (!name) return;
-            localStorage.setItem('exchange_eur_last_user', name);
-            document.getElementById('authModal').classList.add('hidden');
-            loadProfile(name);
+        async function autoLogin(username, password) {
+            try {
+                const res = await fetch('/api/user/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentUser = data.user.username;
+                    currentPassword = password;
+                    currentUserTag = data.user.tag || '#USER'; // <--- Добавили сюда для авто-входа
+                    state = data.user.state || state;
+                    localStorage.setItem('ase_username', currentUser);
+                    localStorage.setItem('ase_password', currentPassword);
+                    document.getElementById('loginModal').style.display = 'none';
+                    document.getElementById('uName').innerText = currentUser;
+                    document.getElementById('uAvatar').innerText = currentUser.charAt(0).toUpperCase();
+                    updateUI();
+                    updateChartTick();
+                    renderHistory();
+                } else {
+                    localStorage.removeItem('ase_password');
+                    document.getElementById('loginModal').style.display = 'flex';
+                }
+            } catch (e) {
+                console.error('[Auth] Ошибка авто-входа:', e);
+                document.getElementById('loginModal').style.display = 'flex';
+            }
         }
 
-        async function loadProfile(username) {
-            currentUser = username;
-            document.getElementById('uName').innerText = username;
-            document.getElementById('uAvatar').innerText = username.charAt(0).toUpperCase();
+        async function performLogin() {
+            const username = document.getElementById('loginUsernameInput').value.trim();
+            const password = document.getElementById('loginPasswordInput').value.trim();
+            const errorBox = document.getElementById('loginErrorMsg');
+
+            if (!username || !password) {
+                errorBox.textContent = 'Заполните никнейм и пароль!';
+                return;
+            }
 
             try {
-                const res = await fetch(`/api/user/${encodeURIComponent(username)}`);
-                const result = await res.json();
-                if (result.found && result.data) state = result.data;
-                else resetDefaultState();
-            } catch (e) { resetDefaultState(); }
+                // Сбрасываем старые переменные в памяти перед входом
+                currentUser = null;
+                currentPassword = null;
+                currentUserTag = '#TAG';
 
-            if (!state.loanDebtBN) state.loanDebtBN = createBN(0,0);
-            if (!state.loanTakenMonthBN) state.loanTakenMonthBN = createBN(0,0);
-            if (!state.maxCapitalLast4Months) state.maxCapitalLast4Months = createBN(0,0);
+                const res = await fetch('/api/user/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
 
-            updateUI();
-            updateChartTick();
-            renderHistory();
+                if (data.success) {
+                    currentUser = data.user.username;
+                    currentPassword = password;
+                    currentUserTag = data.user.tag || '#USER'; 
+                    
+                    // Если аккаунт новый, даем ему чистый дефолтный state, а не старый!
+                    state = data.user.state || { abs: 100 /* или твои начальные данные */ }; 
+
+                    localStorage.setItem('ase_username', currentUser);
+                    localStorage.setItem('ase_password', currentPassword);
+                    
+                    // Перезагружаем страницу, чтобы гарантированно очистить весь мусор от прошлого аккаунта
+                    location.reload(); 
+                } else {
+                    errorBox.textContent = data.error || 'Ошибка входа';
+                }
+            } catch (e) {
+                errorBox.textContent = 'Ошибка соединения с сервером';
+            }
         }
 
-        function resetDefaultState() {
-            state = {
-                abs: { m: 1.0, e: 2 },
-                assets: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-                avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-                shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-                shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-                shortMargins: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-                deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
-                lastDepTime: Date.now(),
-                hasTakenLoan: false,
-                loanDebtBN: { m: 0, e: 0 },
-                loanTakenMonthBN: { m: 0, e: 0 },
-                lastLoanMonthReset: 0,
-                maxCapitalLast4Months: { m: 0, e: 0 },
-                password: "",
-                isAnon: false,
-                history: []
-            };
+
+        function openProfileModal() {
+            if (!currentUser) return;
+            document.getElementById('profileDisplayName').textContent = currentUser;
+            document.getElementById('profileDisplayTag').textContent = currentUserTag;
+            document.getElementById('profileUsernameInput').value = currentUser;
+            document.getElementById('profileBioInput').value = state.bio || '';
+            
+            const currentCap = state && state.abs ? Math.round(toNumberBN(state.abs)) : 0;
+            const peakCap = state && state.maxCapitalLast4Months ? Math.round(toNumberBN(state.maxCapitalLast4Months)) : 0;
+            document.getElementById('profileDisplayCapital').textContent = `Текущий: ${currentCap} € | Пиковый: ${peakCap} €`;
+
+            updateAvatarPreviewUI();
+            document.getElementById('profileModal').style.display = 'flex';
         }
 
-        async function saveProfile() {
-            if (currentUser) {
-                try {
-                    await fetch(`/api/user/${encodeURIComponent(currentUser)}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(state)
-                    });
-                } catch (e) {}
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        function selectEmoji(emoji) {
+            tempSelectedEmoji = emoji;
+            updateAvatarPreviewUI();
+        }
+
+        function selectColor(color) {
+            tempSelectedColor = color;
+            updateAvatarPreviewUI();
+        }
+
+        function updateAvatarPreviewUI() {
+            const preview = document.getElementById('profileAvatarPreview');
+            if(preview) {
+                preview.textContent = tempSelectedEmoji;
+                preview.style.background = tempSelectedColor;
+            }
+        }
+
+        async function saveProfileChanges() {
+            if (!currentUser) return;
+            const newUsername = document.getElementById('profileUsernameInput').value.trim();
+            const bioText = document.getElementById('profileBioInput').value.slice(0, 256);
+
+            if (!newUsername) {
+                alert('Никнейм не может быть пустым!');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/user/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        newUsername: newUsername !== currentUser ? newUsername : undefined,
+                        password: currentPassword,
+                        profile: {
+                            avatarEmoji: tempSelectedEmoji,
+                            avatarColor: tempSelectedColor,
+                            bio: bioText
+                        }
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // Если ник сменился, обновляем локалсторидж и сразу перегружаем страницу, 
+                    // чтобы полностью исключить любые фоновые рассинхронизации со старым именем!
+                    if (newUsername !== currentUser) {
+                        localStorage.setItem('ase_username', newUsername);
+                        localStorage.setItem('ase_password', currentPassword);
+                        alert('Никнейм успешно изменен! Сейчас страница перезагрузится.');
+                        location.reload();
+                        return;
+                    }
+
+                    state.bio = bioText;
+                    alert('Профиль успешно обновлен!');
+                    closeProfileModal();
+                    updateUI();
+                } else {
+                    alert(data.error || 'Ошибка сохранения');
+                }
+            } catch (e) {
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('profileModal').style.display = 'none';
+            document.getElementById('oldPassInput').value = '';
+            document.getElementById('newPassInput').value = '';
+            document.getElementById('passErrorMsg').textContent = '';
+            document.getElementById('changePassModal').style.display = 'flex';
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePassModal').style.display = 'none';
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        async function submitChangePassword() {
+            const oldPassword = document.getElementById('oldPassInput').value;
+            const newPassword = document.getElementById('newPassInput').value;
+            const errBox = document.getElementById('passErrorMsg');
+
+            if (!oldPassword || !newPassword) {
+                errBox.textContent = 'Заполните оба поля';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        oldPassword,
+                        newPassword
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentPassword = newPassword;
+                    localStorage.setItem('ase_password', currentPassword);
+                    alert('Пароль успешно изменен!');
+                    closeChangePasswordModal();
+                } else {
+                    errBox.textContent = data.error || 'Ошибка смены пароля';
+                }
+            } catch (e) {
+                errBox.textContent = 'Ошибка сервера';
             }
         }
 
         function switchUser() {
             saveProfile();
-            localStorage.removeItem('exchange_eur_last_user');
+            localStorage.removeItem('ase_username');
+            localStorage.removeItem('ase_password');
             currentUser = null;
-            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('loginModal').style.display = 'flex';
         }
 
-        function openSettings() {
-            document.getElementById('setPwdInput').value = state.password || '';
-            document.getElementById('setAnonSelect').value = state.isAnon ? 'anon' : 'public';
-            document.getElementById('settingsModal').classList.remove('hidden');
-            document.getElementById('userDropdown').classList.remove('active');
-        }
+        function getAATCalendarDate(secInput) {
+            let sec = Math.floor(secInput);
+            let totalDays = Math.floor(sec / 86400);
+            let secOfCurrentDay = sec % 86400;
 
-        function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
-        function saveSettings() {
-            state.password = document.getElementById('setPwdInput').value;
-            state.isAnon = document.getElementById('setAnonSelect').value === 'anon';
-            saveProfile();
-            closeSettings();
-            showToast("Настройки профиля сохранены");
-        }
+            let year = 2466;
+            while (true) {
+                let dInYear = getDaysInYear(year);
+                if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
+            }
 
+            let month = 1;
+            while (month <= 12) {
+                let dInMonth = getDaysInMonth(year, month);
+                if (totalDays >= dInMonth) { totalDays -= dInMonth; month++; } else break;
+            }
+
+            let day = totalDays + 1;
+            return { year, month, day, secondsOfDay: secOfCurrentDay };
+        }
         function updateUI() {
-            document.getElementById('absDisplay').innerText = formatBigNumberBN(state.abs, 2) + ' €';
+            const absVal = state && state.abs ? formatBigNumberBN(state.abs, 2) : '0.00';
+            const absElem = document.getElementById('absDisplay');
+            if (absElem) absElem.innerText = absVal + ' €';
+            
             updateDepositUI();
             updateBalanceGridAssets();
             updateCapitalizationDisplay();
             renderHistory();
         }
 
-function getAATCalendarDate(secInput) {
-    let sec = Math.floor(secInput);
-    let totalDays = Math.floor(sec / 86400);
-    let secOfCurrentDay = sec % 86400;
-
-    let year = 2466;
-    while (true) {
-        let dInYear = getDaysInYear(year);
-        if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
+        async function saveProfile() {
+    if (!currentUser) return;
+    try {
+        state.lastActionTime = getAATSecondPrecise();
+        await fetch('/api/user/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                password: currentPassword, // должен быть сохранен при логине в глобальной переменной
+                
+                state: state
+            })
+        });
+    } catch (e) {
+        console.error('[Save] Ошибка сохранения:', e);
     }
-
-    let month = 1;
-    while (month <= 12) {
-        let dInMonth = getDaysInMonth(year, month);
-        if (totalDays >= dInMonth) { totalDays -= dInMonth; month++; } else break;
-    }
-
-    let day = totalDays + 1;
-    return { year, month, day, secondsOfDay: secOfCurrentDay };
 }
-
     </script>
 </body>
 </html>

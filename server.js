@@ -5,17 +5,15 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'users_db.json');
+const CHAT_FILE = path.join(__dirname, 'chat_db.json');
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(__dirname));
 
 // === ХРАНИЛИЩЕ В ПАМЯТИ И ЛОКАЛЬНАЯ БД ===
-let usersData = {}; // Ключ — имя пользователя (username)
-let globalChatMessages = [];
+let usersData = {}; 
 let nextUserId = 1; 
-const userChatCooldowns = {}; 
 
-// Фирменный алфавит тегов ASE (14 символов)
 const TAG_CHARS = "0289PYLQGRJCUV"; 
 const BASE = TAG_CHARS.length;
 
@@ -29,7 +27,6 @@ function generateUserTag(idNumber) {
     return "#" + res;
 }
 
-// Загрузка базы пользователей из файла при старте
 if (fs.existsSync(DB_FILE)) {
     try {
         const rawData = fs.readFileSync(DB_FILE, 'utf8');
@@ -37,7 +34,6 @@ if (fs.existsSync(DB_FILE)) {
         usersData = parsed.users || {};
         nextUserId = parsed.nextUserId || (Object.keys(usersData).length + 1);
         
-        // Проверяем старых юзеров на наличие ID и тегов
         Object.values(usersData).forEach(u => {
             if (!u.id) u.id = nextUserId++;
             if (!u.tag) u.tag = generateUserTag(u.id);
@@ -61,6 +57,75 @@ function saveDB() {
     }
 }
 
+// === ЧАТ ТРЕЙДЕРОВ (TROLLBOX) С ПЕРСИСТЕНТНОСТЬЮ ДО 1000 СООБЩЕНИЙ ===
+let chatMessages = [
+    {
+        id: 1,
+        username: 'System',
+        tag: '#Q8',
+        avatarEmoji: '🤖',
+        avatarColor: '#8b5cf6',
+        text: 'Добро пожаловать в Trollbox терминала ASE! Соблюдайте правила торговли и общения.',
+        timestamp: Math.floor(Date.now() / 1000)
+    }
+];
+
+if (fs.existsSync(CHAT_FILE)) {
+    try {
+        const rawChat = fs.readFileSync(CHAT_FILE, 'utf8');
+        const parsedChat = JSON.parse(rawChat);
+        if (Array.isArray(parsedChat) && parsedChat.length > 0) {
+            chatMessages = parsedChat;
+        }
+        console.log('[Chat DB] История чата успешно загружена. Сообщений:', chatMessages.length);
+    } catch (e) {
+        console.error('[Chat DB] Ошибка чтения истории чата:', e);
+    }
+}
+
+function saveChatDB() {
+    try {
+        fs.writeFileSync(CHAT_FILE, JSON.stringify(chatMessages, null, 2), 'utf8');
+    } catch (e) {
+        console.error('[Chat DB] Ошибка сохранения чата:', e);
+    }
+}
+
+app.get('/api/chat/messages', (req, res) => {
+    res.json({ success: true, messages: chatMessages.slice(-1000) });
+});
+
+app.post('/api/chat/send', (req, res) => {
+    const { username, password, text } = req.body;
+    
+    const user = usersData[username];
+    if (!user || user.password !== password) {
+        return res.status(401).json({ success: false, error: 'Неверные данные авторизации' });
+    }
+
+    const cleanText = (text || '').trim();
+    if (!cleanText || cleanText.length > 280) {
+        return res.json({ success: false, error: 'Сообщение должно быть от 1 до 280 символов' });
+    }
+
+    const newMessage = {
+        id: Date.now(),
+        username: user.username,
+        tag: user.tag || '#Q8',
+        avatarEmoji: user.avatarEmoji || '👤',
+        avatarColor: user.avatarColor || '#00f2fe',
+        text: cleanText,
+        timestamp: req.body.aatTimestamp || Math.floor(Date.now() / 1000)
+    };
+
+    chatMessages.push(newMessage);
+    if (chatMessages.length > 1000) chatMessages.shift();
+
+    saveChatDB();
+
+    res.json({ success: true, message: newMessage });
+});
+
 // === API 1: АВТОРИЗАЦИЯ / РЕГИСТРАЦИЯ / ПРОФИЛЬ ===
 app.post('/api/user/login', (req, res) => {
     const { username, password } = req.body;
@@ -71,7 +136,6 @@ app.post('/api/user/login', (req, res) => {
     const cleanName = username.trim();
     let user = usersData[cleanName];
 
-    // 1. Создание абсолютно нового аккаунта
     if (!user) {
         if (!password || !password.trim()) {
             return res.status(400).json({ error: 'Для создания нового аккаунта задайте пароль.' });
@@ -87,14 +151,13 @@ app.post('/api/user/login', (req, res) => {
             bio: '',
             notes: [],
             lastRenameAATYear: 2466,
-            state: null // Чистый прогресс для нового игрока
+            state: null
         };
         usersData[cleanName] = user;
         saveDB();
         return res.json({ success: true, isNew: true, user: { ...user, tag: user.tag } });
     }
 
-    // 2. Привязка пароля к старому аккаунту без пароля
     if (!user.password) {
         if (!password || !password.trim()) {
             return res.status(400).json({ error: 'Этот аккаунт еще не защищен паролем. Введите новый пароль для привязки.' });
@@ -107,7 +170,6 @@ app.post('/api/user/login', (req, res) => {
         return res.json({ success: true, user: { ...user, tag: user.tag } });
     }
 
-    // 3. Проверка пароля существующего аккаунта
     if (user.password !== (password || '').trim()) {
         return res.status(401).json({ error: 'Неверный пароль для этого пользователя!' });
     }
@@ -121,7 +183,6 @@ app.post('/api/user/login', (req, res) => {
     res.json({ success: true, user: { ...user, tag: user.tag } });
 });
 
-// Сохранение игрового прогресса, заметок и профиля с поддержкой смены никнейма
 app.post('/api/user/save', (req, res) => {
     const { username, newUsername, password, state, notes, profile } = req.body;
     if (!username || !usersData[username]) {
@@ -133,21 +194,18 @@ app.post('/api/user/save', (req, res) => {
         return res.status(403).json({ error: 'Ошибка авторизации при сохранении (неверный пароль)' });
     }
 
-    // Если игрок решил сменить никнейм
     const cleanNewName = newUsername ? newUsername.trim() : '';
     if (cleanNewName && cleanNewName !== username) {
         if (usersData[cleanNewName]) {
             return res.status(400).json({ error: 'Этот никнейм уже занят другим игроком!' });
         }
-        // Переносим данные на новый ключ и обновляем поле username внутри объекта
         user.username = cleanNewName;
         usersData[cleanNewName] = user;
         delete usersData[username];
     }
 
-    // Сохраняем прогресс и настройки
     if (state) user.state = state;
-    if (Array.isArray(notes)) user.notes = notes.slice(0, 10);
+    if (Array.isArray(notes)) user.notes = notes.slice(0, 50);
 
     if (profile) {
         if (profile.avatarEmoji) user.avatarEmoji = profile.avatarEmoji;
@@ -159,9 +217,6 @@ app.post('/api/user/save', (req, res) => {
     res.json({ success: true, newUsername: cleanNewName || username });
 });
 
-    
-
-// Смена пароля
 app.post('/api/user/change-password', (req, res) => {
     const { username, oldPassword, newPassword } = req.body;
     const user = usersData[username];
@@ -178,52 +233,6 @@ app.post('/api/user/change-password', (req, res) => {
     res.json({ success: true });
 });
 
-// === API 2: ЧАТ ТРЕЙДЕРОВ (TROLLBOX) ===
-app.get('/api/chat', (req, res) => {
-    res.json({ messages: globalChatMessages.slice(-50) });
-});
-
-app.post('/api/chat', (req, res) => {
-    const { username, text, aatTimeStr } = req.body;
-    const user = usersData[username];
-
-    if (!user) {
-        return res.status(403).json({ error: 'Отправлять сообщения могут только авторизованные игроки' });
-    }
-
-    const now = Date.now();
-    const lastSend = userChatCooldowns[username] || 0;
-    if (now - lastSend < 2500) {
-        const waitSec = ((2500 - (now - lastSend)) / 1000).toFixed(1);
-        return res.status(429).json({ error: `Слишком часто! Подождите ${waitSec} сек.` });
-    }
-
-    if (!text || !text.trim()) {
-        return res.status(400).json({ error: 'Пустое сообщение' });
-    }
-
-    const cleanText = text.trim().slice(0, 512);
-    userChatCooldowns[username] = now;
-
-    if (!user.tag) user.tag = generateUserTag(user.id || 1);
-
-    const msgObj = {
-        id: Date.now() + Math.random().toString(36).substr(2, 4),
-        user: user.username,
-        tag: user.tag,
-        emoji: user.avatarEmoji || '👤',
-        color: user.avatarColor || '#00f2fe',
-        text: cleanText,
-        aatTime: aatTimeStr || 'AAT',
-        timestamp: now
-    };
-
-    globalChatMessages.push(msgObj);
-    if (globalChatMessages.length > 200) globalChatMessages.shift();
-
-    res.json({ success: true, messages: globalChatMessages.slice(-50) });
-});
-
 // === API 3: ТАБЛИЦА ЛИДЕРОВ ===
 app.get('/api/leaderboard', (req, res) => {
     const list = Object.values(usersData)
@@ -237,6 +246,102 @@ app.get('/api/leaderboard', (req, res) => {
             lastActionTime: u.state.lastActionTime || (u.state.history && u.state.history.length > 0 ? u.state.history[0].timestamp : 0)
         }));
     res.json(list);
+});
+
+// === API 4: ПУБЛИЧНЫЙ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ===
+app.get('/api/user/profile', (req, res) => {
+    const username = req.query.username;
+    if (!username || !usersData[username]) {
+        return res.status(404).json({ success: false, error: 'Пользователь не найден' });
+    }
+
+    const u = usersData[username];
+    let currentCapital = 0;
+    if (u.state) {
+        currentCapital = u.state.abs || u.state.maxCapitalLast4Months || 0;
+    }
+
+    res.json({
+        success: true,
+        user: {
+            username: u.username,
+            tag: u.tag || generateUserTag(u.id || 1),
+            avatarEmoji: u.avatarEmoji || '👤',
+            avatarColor: u.avatarColor || '#00f2fe',
+            bio: u.bio || '',
+            capital: currentCapital
+        }
+    });
+});
+
+// === API ЗАМЕТОК ===
+app.post('/api/notes/get', (req, res) => {
+    const { username, password } = req.body;
+    const user = usersData[username];
+    if (!user || user.password !== password) {
+        return res.status(403).json({ success: false, error: 'Ошибка авторизации' });
+    }
+    if (!user.notes) user.notes = [];
+    res.json({ success: true, notes: user.notes });
+});
+
+app.post('/api/notes/save', (req, res) => {
+    const { username, password, id, title, text } = req.body;
+    const user = usersData[username];
+    if (!user || user.password !== password) {
+        return res.status(403).json({ success: false, error: 'Ошибка авторизации' });
+    }
+
+    if (!user.notes) user.notes = [];
+
+    const noteTitle = (title || '').trim();
+    const noteText = (text || '').trim();
+
+    if (!noteText) {
+        return res.status(400).json({ success: false, error: 'Текст заметки не может быть пустым' });
+    }
+    if (noteTitle.length > 40) {
+        return res.status(400).json({ success: false, error: 'Заголовок не должен превышать 40 символов' });
+    }
+    if (noteText.length > 1536) {
+        return res.status(400).json({ success: false, error: 'Текст заметки не должен превышать 1536 символов' });
+    }
+
+    const existingIndex = user.notes.findIndex(n => n.id === id);
+
+    if (existingIndex === -1 && user.notes.length >= 50) {
+        return res.status(400).json({ success: false, error: 'Достигнут лимит: максимум 50 заметок!' });
+    }
+
+    if (existingIndex !== -1) {
+        user.notes[existingIndex].title = noteTitle || 'Без названия';
+        user.notes[existingIndex].text = noteText;
+        user.notes[existingIndex].updatedAt = new Date().toISOString();
+    } else {
+        user.notes.push({
+            id: Date.now(),
+            title: noteTitle || 'Без названия',
+            text: noteText,
+            updatedAt: new Date().toISOString()
+        });
+    }
+
+    saveDB();
+    res.json({ success: true, notes: user.notes });
+});
+
+app.post('/api/notes/delete', (req, res) => {
+    const { username, password, id } = req.body;
+    const user = usersData[username];
+    if (!user || user.password !== password) {
+        return res.status(403).json({ success: false, error: 'Ошибка авторизации' });
+    }
+
+    if (!user.notes) user.notes = [];
+    user.notes = user.notes.filter(n => n.id !== Number(id));
+
+    saveDB();
+    res.json({ success: true, notes: user.notes });
 });
 
 app.listen(PORT, () => {

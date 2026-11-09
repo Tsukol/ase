@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ainalandia Stock Exchange (ASE) v1.3.0</title>
+    <title>Ainalandia Stock Exchange (ASE) v1.4</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- Стили для модальных окон v1.3.0 --- */
+        /* --- Стили для модальных окон v1.4 --- */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -107,7 +107,13 @@
         .color-option {
             width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
         }
-        .color-option.selected { border-color: #fff; transform: scale(1.1); }
+        .color-option.selected { 
+    border-color: #ffffff !important; 
+    transform: scale(1.25); 
+    box-shadow: 0 0 12px #38bdf8, 0 0 4px #ffffff;
+    outline: 2px solid #38bdf8;
+    outline-offset: 2px;
+}
 
         :root {
             --bg-color: #0b0f19;
@@ -257,6 +263,9 @@
         .news-header-line { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: monospace; }
         .news-text { font-size: 0.8rem; line-height: 1.3; }
 
+
+
+
         .history-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
         .history-header-row { display: flex; justify-content: space-between; align-items: center; }
         .history-title { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
@@ -286,10 +295,10 @@
 </head>
 <body>
 
-    <!-- МОДАЛКА ВХОДА / РЕГИСТРАЦИИ v1.3.0 (ВНУТРИ BODY) -->
+    <!-- МОДАЛКА ВХОДА / РЕГИСТРАЦИИ v1.4 (ВНУТРИ BODY) -->
     <div id="loginModal" class="modal-overlay">
         <div class="modal-box">
-            <h2>🔑 Вход в ASE v1.3.0</h2>
+            <h2>🔑 Вход в ASE v1.4</h2>
             <div class="modal-info-box">
                 Если аккаунта еще нет или он без пароля — введенный пароль закрепится за вами. Если аккаунт существует — введите действующий пароль.
             </div>
@@ -324,24 +333,32 @@
             <div class="modal-input-group">
                 <label>Выбрать эмодзи-аватар:</label>
                 <div class="emoji-picker-grid" id="emojiPickerGrid">
-                    <span class="emoji-option" onclick="selectEmoji('👤')">👤</span>
-                    <span class="emoji-option" onclick="selectEmoji('🦊')">🦊</span>
-                    <span class="emoji-option" onclick="selectEmoji('🚀')">🚀</span>
-                    <span class="emoji-option" onclick="selectEmoji('💎')">💎</span>
-                    <span class="emoji-option" onclick="selectEmoji('👑')">👑</span>
-                    <span class="emoji-option" onclick="selectEmoji('📈')">📈</span>
+                    <span class="emoji-option selected" onclick="selectEmoji('👤', this)">👤</span>
+                    <span class="emoji-option" onclick="selectEmoji('🦊', this)">🦊</span>
+                    <span class="emoji-option" onclick="selectEmoji('🚀', this)">🚀</span>
+                    <span class="emoji-option" onclick="selectEmoji('💎', this)">💎</span>
+                    <span class="emoji-option" onclick="selectEmoji('👑', this)">👑</span>
+                    <span class="emoji-option" onclick="selectEmoji('📈', this)">📈</span>
+                    <span class="emoji-option" onclick="selectEmoji('⚡', this)">⚡</span>
+                    <span class="emoji-option" onclick="selectEmoji('🤖', this)">🤖</span>
+                    <span class="emoji-option" onclick="selectEmoji('💀', this)">💀</span>
+                    <span class="emoji-option" onclick="selectEmoji('💼', this)">💼</span>
+                    <span class="emoji-option" onclick="selectEmoji('🌙', this)">🌙</span>
+                    <span class="emoji-option" onclick="selectEmoji('🔥', this)">🔥</span>
                 </div>
             </div>
 
             <div class="modal-input-group">
                 <label>Цвет фона аватара:</label>
                 <div class="color-picker-grid" id="colorPickerGrid">
-                    <div class="color-option" style="background: #00f2fe;" onclick="selectColor('#00f2fe')"></div>
-                    <div class="color-option" style="background: #10b981;" onclick="selectColor('#10b981')"></div>
-                    <div class="color-option" style="background: #f59e0b;" onclick="selectColor('#f59e0b')"></div>
-                    <div class="color-option" style="background: #ef4444;" onclick="selectColor('#ef4444')"></div>
-                    <div class="color-option" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6')"></div>
-                    <div class="color-option" style="background: #ec4899;" onclick="selectColor('#ec4899')"></div>
+                    <div class="color-option selected" style="background: #00f2fe;" onclick="selectColor('#00f2fe', this)"></div>
+                    <div class="color-option" style="background: #10b981;" onclick="selectColor('#10b981', this)"></div>
+                    <div class="color-option" style="background: #f59e0b;" onclick="selectColor('#f59e0b', this)"></div>
+                    <div class="color-option" style="background: #ef4444;" onclick="selectColor('#ef4444', this)"></div>
+                    <div class="color-option" style="background: #8b5cf6;" onclick="selectColor('#8b5cf6', this)"></div>
+                    <div class="color-option" style="background: #ec4899;" onclick="selectColor('#ec4899', this)"></div>
+                    <div class="color-option" style="background: #38bdf8;" onclick="selectColor('#38bdf8', this)"></div>
+                    <div class="color-option" style="background: #64748b;" onclick="selectColor('#64748b', this)"></div>
                 </div>
             </div>
 
@@ -357,6 +374,29 @@
             <button class="modal-btn" style="background: #1e293b; border: 1px solid #334155; margin-top: 8px;" onclick="closeProfileModal()">Закрыть</button>
         </div>
     </div>
+
+    <!-- Модальное окно просмотра чужого профиля -->
+<div id="viewProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #1e1e24; padding: 25px; border-radius: 12px; width: 350px; border: 1px solid #333; color: #fff; text-align: center; position: relative; box-sizing: border-box;">
+        <button onclick="closeViewProfileModal()" style="position: absolute; top: 12px; right: 12px; background: transparent; border: none; color: #888; font-size: 18px; cursor: pointer;">✕</button>
+        
+        <h3 style="margin-top: 0; margin-bottom: 20px; color: #38bdf8;">Профиль трейдера</h3>
+        
+        <!-- Кастомная аватарка игрока -->
+        <div id="viewProfileAvatar" style="width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center; font-size: 32px; background: #0284c7;">
+            👤
+        </div>
+        
+        <div id="viewProfileName" style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">Имя</div>
+        <div id="viewProfileTag" style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">#TAG</div>
+        
+        <div style="background: #111113; padding: 12px; border-radius: 8px; text-align: left; font-size: 13px; border: 1px solid #222;">
+            <div style="margin-bottom: 6px; color: #aaa;">Капитал: <span id="viewProfileCapital" style="color: #38bdf8; font-weight: bold;">0 €</span></div>
+            <div style="color: #aaa;">Био:</div>
+            <div id="viewProfileBio" style="color: #e2e8f0; margin-top: 4px; word-break: break-word;">Пусто</div>
+        </div>
+    </div>
+</div>
     
 
     <!-- МОДАЛКА СМЕНЫ ПАРОЛЯ (ВНУТРИ BODY) -->
@@ -392,7 +432,7 @@
                     <div class="dropdown-item" onclick="switchUser()">🚪 Сменить профиль</div>
                 </div>
             </div>
-            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.3.0</div>
+            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.4</div>
         </div>
 
         <div class="aat-clock" id="aatClockDisplay">Время по AAT: Загрузка...</div>
@@ -436,6 +476,8 @@
             <button id="tabBtn-depositTab" class="nav-tab" onclick="switchTab('depositTab')">🏛 Депозитарий</button>
             <button id="tabBtn-loanTab" class="nav-tab" onclick="switchTab('loanTab')">💳 Кредит</button>
             <button id="tabBtn-newsTab" class="nav-tab" onclick="switchTab('newsTab')">📰 Новости</button>
+            <button id="tabBtn-notesTab" class="nav-tab" onclick="switchTab('notesTab')">📝 Заметки</button>
+            <button id="tabBtn-chatTab" class="nav-tab" onclick="switchTab('chatTab')">💬 Чат</button>
         </div>
 
         <!-- ВКЛАДКА 1: ГЛАВНАЯ СТРАНИЦА -->
@@ -443,7 +485,7 @@
             <div class="chart-card">
                 <div class="chart-controls">
                     <span style="font-size: 0.85rem; font-weight: 600;" id="chartTitle">Котировки: AITH</span>
-                    <div style="font-size: 0.75rem; color: var(--accent-blue); background: rgba(0,242,254,0.1); padding: 4px 10px; border-radius: 6px; font-weight: bold;">📈 1Ч (Линия)</div>
+                    <div style="font-size: 0.75rem; color: var(--accent-blue); background: rgba(0,242,254,0.1); padding: 4px 10px; border-radius: 6px; font-weight: bold;">📈 1Ч</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="marketChart"></canvas>
@@ -492,6 +534,9 @@
                 <div class="trade-actions" id="tradeActionsBlock"></div>
             </div>
 
+            
+
+
             <div class="history-card">
                 <div class="history-header-row">
                     <div class="history-title">Последние сделки (10)</div>
@@ -507,7 +552,7 @@
             <div class="deposit-card">
                 <div class="deposit-header">
                     <div class="deposit-title">🏛 Депозитарий ценных бумаг и валюты</div>
-                    <div class="deposit-info">Доходность: 8% (акции) / 3% (€) / 16% (VOID) в мес.</div>
+                    <div class="deposit-info">Доходность: 32% (акции) / 16% (€) в год.</div>
                 </div>
 
                 <div class="selector-row">
@@ -555,7 +600,7 @@
             <div class="loan-card">
                 <div class="loan-header">
                     <div class="loan-title">💳 Кредитный терминал ASE</div>
-                    <div class="loan-info">Комиссия: +10% разово (без тиков по времени)</div>
+                    <div class="loan-info">Условия: +8% за взятие + 32% годовых</div>
                 </div>
 
                 <div class="loan-stats">
@@ -597,12 +642,80 @@
         <div id="newsTab" class="tab-content hidden">
             <div class="news-card">
                 <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка ASE</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">Новости выходят строго в 12:00 каждого третьего игрового дня (последние 100).</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Новости выходят каждый день в 12:00. (Отображаются последние 100).</div>
                 <div class="news-list" id="newsListContainer"></div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА 5: ИСТОРИЯ (ПОЛНАЯ) -->
+        <!-- ВКЛАДКА 5: ЗАМЕТКИ ТРЕЙДЕРА -->
+<div id="notesTab" class="tab-content hidden">
+    <div class="terminal-card" style="padding: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-main);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; color: var(--accent-blue); font-size: 16px;">📝 Заметки трейдера</h3>
+            <span id="notesTotalCount" style="font-weight: bold; color: var(--text-muted); font-size: 13px;">0 / 50</span>
+        </div>
+
+        <!-- Форма создания -->
+        <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+            <div style="margin-bottom: 8px;">
+                <input type="text" id="noteTitleInput" maxlength="40" placeholder="Заголовок (до 40 символов)" 
+                       style="width: 100%; padding: 8px 12px; background: #0b0f17; color: #fff; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box;" oninput="updateCharCounts()" />
+                <div style="text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="titleCharCount">0 / 40</div>
+            </div>
+
+            <div style="margin-bottom: 8px;">
+                <textarea id="noteTextInput" maxlength="1536" rows="4" placeholder="Текст заметки (до 1536 символов)..." 
+                          style="width: 100%; padding: 8px 12px; background: #0b0f17; color: #fff; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; resize: vertical;" oninput="updateCharCounts()"></textarea>
+                <div style="text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="textCharCount">0 / 1536</div>
+            </div>
+
+            <button id="addNoteBtn" onclick="createNote()" style="padding: 10px 16px; background: var(--accent-blue); color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85rem;">
+                Сохранить заметку
+            </button>
+        </div>
+
+        <!-- Список заметок -->
+        <div id="notesContainer" style="display: flex; flex-direction: column; gap: 8px; min-height: 150px;"></div>
+
+        <!-- Пагинация -->
+        <div id="pagination" style="display: flex; justify-content: center; gap: 6px; margin-top: 15px;"></div>
+    </div>
+</div>
+
+<!-- ВКЛАДКА 6: 💬 ЧАТ ТРЕЙДЕРОВ (TROLLBOX) -->
+        <div id="chatTab" class="tab-content hidden">
+            <div class="terminal-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; height: 520px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">💬 Trollbox (Чат трейдеров)</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);" id="chatStatus">Подключено</span>
+                </div>
+
+                <!-- Список сообщений -->
+                <div id="chatMessagesContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px;">Загрузка сообщений...</div>
+                </div>
+
+                <!-- Форма отправки -->
+                <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="chatInput" maxlength="280" placeholder="Напишите сообщение..." 
+                               style="flex: 1; padding: 10px 12px; background: #0b0f17; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 0.85rem;"
+                               onkeydown="if(event.key==='Enter') sendChatMessage()" oninput="updateChatCharCount()">
+                        <button onclick="sendChatMessage()" style="padding: 10px 16px; background: var(--accent-blue); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
+                            Отправить
+                        </button>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                        <span>Нажмите Enter для отправки</span>
+                        <span id="chatCharCount">0 / 280</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- ВКЛАДКА 7: ИСТОРИЯ (ПОЛНАЯ) -->
         <div id="historyTab" class="tab-content hidden">
             <div class="history-card">
                 <div class="history-header-row">
@@ -617,7 +730,7 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 6: 🏆 Список лидеров -->
+        <!-- ВКЛАДКА 8: 🏆 Список лидеров -->
         <div id="leaderTab" class="tab-content hidden">
             <div class="leader-card">
                 <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">🏆 Список лидеров</div>
@@ -824,15 +937,15 @@
         }
 
         const assetConfigs = {
-            AITH: { basePrice: 25.0, vol: 0.006, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
-            SOFF: { basePrice: 75.0, vol: 0.012, color: '#10b981', seedOffset: 202, timeScale: 0.98 },
-            BIOM: { basePrice: 125.0, vol: 0.018, color: '#ef4444', seedOffset: 303, timeScale: 0.96 },
-            VOID: { basePrice: 275.0, vol: 0.030, color: '#8b5cf6', seedOffset: 404, timeScale: 0.94 }
+            AITH: { basePrice: 25.0, vol: 0.003, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
+            SOFF: { basePrice: 75.0, vol: 0.006, color: '#10b981', seedOffset: 202, timeScale: 0.98 },
+            BIOM: { basePrice: 125.0, vol: 0.009, color: '#ef4444', seedOffset: 303, timeScale: 0.96 },
+            VOID: { basePrice: 275.0, vol: 0.015, color: '#8b5cf6', seedOffset: 404, timeScale: 0.94 }
         };
 
-        const SHARE_DEP_RATE = Math.pow(1.08, 1 / SECONDS_IN_MONTH);
-        const VOID_DEP_RATE = Math.pow(1.16, 1 / SECONDS_IN_MONTH);
-        const EUR_DEP_RATE = Math.pow(1.03, 1 / SECONDS_IN_MONTH);
+        const SHARE_DEP_RATE = Math.pow(1.02341, 1 / SECONDS_IN_MONTH);
+        const VOID_DEP_RATE = Math.pow(1.02341, 1 / SECONDS_IN_MONTH);
+        const EUR_DEP_RATE = Math.pow(1.01244, 1 / SECONDS_IN_MONTH);
 
         let state = {
             abs: { m: 0, e: 0 },
@@ -842,11 +955,12 @@
             shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             shortMargins: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
             deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
-            lastDepTime: Date.now(),
+            lastDepTime: Date.now() / 1000,
             hasTakenLoan: false,
             loanDebtBN: { m: 0, e: 0 },
             loanTakenMonthBN: { m: 0, e: 0 },
             lastLoanMonthReset: 0,
+            lastLoanCompoundingTime: 0, // <--- Добавили сюда
             maxCapitalLast4Months: { m: 0, e: 0 },
             password: "",
             isAnon: false,
@@ -861,28 +975,44 @@
         }
 
         const newsTemplates = {
-            AITH: [
-                { type: 'PUMP', text: 'AinaTech заключила крупный контракт на поставку квантовых процессоров.', mult: 4.0 },
-                { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций AinaTech.', mult: 0.70 }
-            ],
-            SOFF: [
-                { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 6.0 },
-                { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.50 }
-            ],
-            BIOM: [
-                { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 8.0 },
-                { type: 'DUMP', text: 'Приостановлена лицензия BioMusor.', mult: 0.35 }
-            ],
-            VOID: [
-                { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 20.0 },
-                { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.20 }
-            ]
-        };
+    AITH: [
+        { type: 'PUMP', text: 'AinaTech заключила крупный контракт на поставку квантовых процессоров.', mult: 1.25 },
+        { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций AinaTech.', mult: 0.80 },
+        { type: 'PUMP', text: 'Анонсирована революционная операционная система от AinaTech.', mult: 1.60 },
+        { type: 'DUMP', text: 'В серверах AinaTech обнаружена критическая уязвимость нулевого дня.', mult: 0.625 },
+        { type: 'PUMP', text: 'AinaTech поглощает перспективный стартап в сфере ИИ.', mult: 2.00 },
+        { type: 'DUMP', text: 'Антимонопольный комитет начал расследование против AinaTech.', mult: 0.50 }
+    ],
+    SOFF: [
+        { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 1.50 },
+        { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.67 },
+        { type: 'PUMP', text: 'Запущен масштабный проект по модернизации энергосистемы города.', mult: 1.80 },
+        { type: 'DUMP', text: 'Масштабная авария на главной подстанции SvetOFF.', mult: 0.56 },
+        { type: 'PUMP', text: 'Правительство субсидирует зеленую энергетику SvetOFF.', mult: 2.50 },
+        { type: 'DUMP', text: 'Резкий рост цен на сырье обвалил маржинальность SvetOFF.', mult: 0.40 }
+    ],
+    BIOM: [
+        { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 1.50 },
+        { type: 'DUMP', text: 'Приостановлена лицензия BioMusor из-за экологических тестов.', mult: 0.67 },
+        { type: 'PUMP', text: 'BioMusor открывает сеть заводов по переработке нового поколения.', mult: 2.00 },
+        { type: 'DUMP', text: 'Партия биоматериалов BioMusor признана бракованной.', mult: 0.50 },
+        { type: 'PUMP', text: 'Глобальный тренд на эко-стандарты вывел BioMusor в топ.', mult: 2.50 },
+        { type: 'DUMP', text: 'Скандал с утилизацией отходов ударил по репутации BioMusor.', mult: 0.40 }
+    ],
+    VOID: [
+        { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 2.75 },
+        { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.37 },
+        { type: 'PUMP', text: 'Секретный эксперимент Void Energy увенчался колоссальным успехом.', mult: 3.50 },
+        { type: 'DUMP', text: 'Ученые фиксируют опасную нестарость полей вокруг реактора Void.', mult: 0.29 },
+        { type: 'PUMP', text: 'Абсолютный прорыв: Void Energy открывает источник неисчерпаемой энергии!', mult: 4.00 },
+        { type: 'DUMP', text: 'Полная остановка реактора Void Energy из-за аномального сбоя.', mult: 0.25 }
+    ]
+};
 
-        function getNewsExactTime(blockIndex) { return (blockIndex * 3 + 3) * 86400 + 43200; }
+        function getNewsExactTime(blockIndex) { return (blockIndex * 1 + 1) * 86400 + 43200; }
 
         function getNewsMultiplierAtSecond(targetAATSecond, asset) {
-            const currentBlock = Math.floor((Math.floor(targetAATSecond / 86400) - 1) / 3);
+            const currentBlock = Math.floor((Math.floor(targetAATSecond / 86400) - 1) / 1);
             let accumulatedMult = 1.0;
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
 
@@ -895,11 +1025,11 @@
                     const templates = newsTemplates[asset];
                     const tpl = templates[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length)];
                     const elapsed = targetAATSecond - exactNewsTime;
-                    const floorLevel = tpl.type === 'PUMP' ? 1.16 : 0.89;
+                    const floorLevel = tpl.type === 'PUMP' ? 1.06 : 0.95;
 
-                    if (elapsed >= 0 && elapsed < 86400) {
-                        accumulatedMult *= (tpl.mult + (floorLevel - tpl.mult) * (elapsed / 86400));
-                    } else if (elapsed >= 86400) {
+                    if (elapsed >= 0 && elapsed < 21600) {
+                        accumulatedMult *= (tpl.mult + (floorLevel - tpl.mult) * (elapsed / 21600));
+                    } else if (elapsed >= 21600) {
                         accumulatedMult *= floorLevel;
                     }
                 }
@@ -909,7 +1039,7 @@
 
         function getActiveNewsHistory() {
             const currentAAT = getAATSecondPrecise();
-            const currentBlock = Math.floor((Math.floor(currentAAT / 86400) - 1) / 3);
+            const currentBlock = Math.floor((Math.floor(currentAAT / 86400) - 1) / 1);
             const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
             const history = [];
 
@@ -962,7 +1092,7 @@
             const assetTimeSec = targetAATSecond * config.timeScale;
             const elapsedMonths = Math.max(0, (assetTimeSec - AAT_BASE_TIMESTAMP) / SECONDS_IN_MONTH);
             
-            const baseTrendBase = config.basePrice * Math.pow(1.14, elapsedMonths);
+            const baseTrendBase = config.basePrice * Math.pow(1.05, elapsedMonths);
             const chunkStep = TICK_INTERVAL_SECONDS;
             const targetChunk = Math.floor(assetTimeSec / chunkStep);
             const startChunk = Math.max(0, targetChunk - 250);
@@ -997,7 +1127,7 @@
         }
 
         function processDepositCompound() {
-            const now = Date.now();
+            const now = Date.now() / 1000;
             const elapsedRealMs = now - state.lastDepTime;
             if (elapsedRealMs >= 500) {
                 const effectiveSec = (elapsedRealMs / 1000) * AAT_SPEED_MULTIPLIER;
@@ -1057,6 +1187,20 @@
             if (tabId === 'newsTab') renderNewsList();
             if (tabId === 'historyTab') renderFullHistory();
             if (tabId === 'leaderTab') renderLeaderboard();
+            if (tabId === 'notesTab') loadNotes();
+
+            // --- ДОБАВЛЯЕМ ВОТ ЭТОТ БЛОК ДЛЯ ЧАТА ---
+            if (tabId === 'chatTab') {
+                loadChatMessages();
+                if (!chatPollInterval) {
+                    chatPollInterval = setInterval(loadChatMessages, 3000);
+                }
+            } else {
+                if (chatPollInterval) {
+                    clearInterval(chatPollInterval);
+                    chatPollInterval = null;
+                }
+            }
         }
 
         function toggleUserDropdown(e) {
@@ -1096,26 +1240,33 @@
         }
 
         function updateLoanCalculationHint() {
-            checkMonthlyLoanReset();
-            const totalLimitBN = getDynamicLoanLimit();
-            const takenBN = state.loanTakenMonthBN || createBN(0,0);
-            const remainingLimitBN = subBN(totalLimitBN, takenBN);
-            
-            const pctBN = fromNumber(loanPercent / 100);
-            const selectedTakeBN = mulBN(remainingLimitBN.m > 0 ? remainingLimitBN : createBN(0,0), pctBN);
-            const repayAmountBN = mulBN(selectedTakeBN, fromNumber(1.10));
+    checkMonthlyLoanReset();
+    const totalLimitBN = getDynamicLoanLimit();
+    const takenBN = state.loanTakenMonthBN || createBN(0,0);
+    const remainingLimitBN = subBN(totalLimitBN, takenBN);
+    
+    const pctBN = fromNumber(loanPercent / 100);
+    const selectedTakeBN = mulBN(remainingLimitBN.m > 0 ? remainingLimitBN : createBN(0,0), pctBN);
+    
+    // В момент выдачи стартовый долг увеличивается на 8% комиссии
+    const initialDebtBN = mulBN(selectedTakeBN, fromNumber(1.08));
 
-            const hintElem = document.getElementById('loanCalcHint');
-            if (hintElem) {
-                hintElem.innerText = `Получите на руки: +${formatBigNumberBN(selectedTakeBN, 2)} € | Долг с комиссией 10%: ${formatBigNumberBN(repayAmountBN, 2)} €`;
-            }
-        }
+    const hintElem = document.getElementById('loanCalcHint');
+    if (hintElem) {
+        hintElem.innerText = `Получите: +${formatBigNumberBN(selectedTakeBN, 2)} € | Стартовый долг (+8%): ${formatBigNumberBN(initialDebtBN, 2)} € (+32%/год)`;
+    }
+}
 
         function updateLoanUI() {
             checkMonthlyLoanReset();
             const totalLimitBN = getDynamicLoanLimit();
             const takenBN = state.loanTakenMonthBN || createBN(0,0);
-            const debtBN = state.loanDebtBN || createBN(0,0);
+            
+            // ЗАМЕНЯЕМ ЭТУ СТРОКУ:
+            // const debtBN = state.loanDebtBN || createBN(0,0);
+            
+            // НА ЭТУ:
+            const debtBN = getCurrentLoanDebt();
 
             document.getElementById('loanMonthDisplay').innerText = `${formatBigNumberBN(takenBN, 0)} / ${formatBigNumberBN(totalLimitBN, 0)} €`;
             document.getElementById('loanDebtDisplay').innerText = `${formatBigNumberBN(debtBN, 2)} €`;
@@ -1123,60 +1274,108 @@
         }
 
         function takeLoanBySlider() {
-            checkMonthlyLoanReset();
-            const totalLimitBN = getDynamicLoanLimit();
-            const takenBN = state.loanTakenMonthBN || createBN(0,0);
-            const remainingLimitBN = subBN(totalLimitBN, takenBN);
+    checkMonthlyLoanReset();
+    const totalLimitBN = getDynamicLoanLimit();
+    const takenBN = state.loanTakenMonthBN || createBN(0,0);
+    const remainingLimitBN = subBN(totalLimitBN, takenBN);
 
-            if (remainingLimitBN.m <= 0) {
-                showToast('Месячный лимит кредита полностью исчерпан!');
-                return;
-            }
+    if (remainingLimitBN.m <= 0) {
+        showToast('Месячный лимит кредита полностью исчерпан!');
+        return;
+    }
 
-            const pctBN = fromNumber(loanPercent / 100);
-            const amountTakeBN = mulBN(remainingLimitBN, pctBN);
+    const pctBN = fromNumber(loanPercent / 100);
+    const amountTakeBN = mulBN(remainingLimitBN, pctBN);
 
-            if (amountTakeBN.m <= 0) {
-                showToast('Выберите сумму кредита!');
-                return;
-            }
+    if (amountTakeBN.m <= 0) {
+        showToast('Выберите сумму кредита!');
+        return;
+    }
 
-            const debtAddBN = mulBN(amountTakeBN, fromNumber(1.10));
+    // 1. Фиксируем время старта через земное время (как у депозитов)
+state.lastLoanCompoundingTime = Date.now() / 1000;
+state.lastLoanCompoundingRealTime = Date.now() / 1000; // Синхронизируем, чтобы не нулило!
 
-            state.abs = addBN(state.abs, amountTakeBN);
-            state.loanDebtBN = addBN(state.loanDebtBN || createBN(0,0), debtAddBN);
-            state.loanTakenMonthBN = addBN(state.loanTakenMonthBN || createBN(0,0), amountTakeBN);
-            state.hasTakenLoan = true;
+    // 2. Считаем долг с 8% комиссии
+    const initialDebtWithCommissionBN = mulBN(amountTakeBN, fromNumber(1.08));
 
-            showToast(`Взято +${formatBigNumberBN(amountTakeBN, 2)} €! Долг: ${formatBigNumberBN(debtAddBN, 2)} €`);
-            addHistoryRecord('КРЕДИТ', `Получен займ +${formatBigNumberBN(amountTakeBN, 2)} €`, `+${formatBigNumberBN(amountTakeBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+    // 3. Суммируем со старым долгом (если он был) или записываем новый
+    const currentDebtBN = getCurrentLoanDebt();
+    state.loanDebtBN = addBN(currentDebtBN, initialDebtWithCommissionBN);
 
-            saveProfile();
-            updateUI();
-            updateLoanUI();
-        }
+    state.abs = addBN(state.abs, amountTakeBN);
+    state.loanTakenMonthBN = addBN(state.loanTakenMonthBN || createBN(0,0), amountTakeBN);
+    state.hasTakenLoan = true;
+
+    showToast(`Взято +${formatBigNumberBN(amountTakeBN, 2)} €! Долг с комиссией 8%: ${formatBigNumberBN(initialDebtWithCommissionBN, 2)} €`);
+    addHistoryRecord('КРЕДИТ', `Взят заём (+8% ком.): +${formatBigNumberBN(amountTakeBN, 2)} €`, `+${formatBigNumberBN(amountTakeBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+
+    saveProfile();
+    updateUI();
+    updateLoanUI();
+}
+
+
+const SECONDS_IN_YEAR = 31536000;
+
+function getCurrentLoanDebt() {
+    const debtBN = state.loanDebtBN;
+    if (!debtBN || typeof debtBN.m === 'undefined') {
+        return createBN(0, 0);
+    }
+    // Если долг равен нулю по значению, но объект есть — вернем его как есть
+    if (debtBN.m <= 0) {
+        return debtBN;
+    }
+
+    const nowSec = Date.now() / 1000;
+
+    if (!state.lastLoanCompoundingTime || state.lastLoanCompoundingTime < 1700000000 || state.lastLoanCompoundingTime > 1e11) {
+        state.lastLoanCompoundingTime = nowSec;
+        return debtBN;
+    }
+
+    let elapsedRealSeconds = nowSec - state.lastLoanCompoundingTime;
+    if (elapsedRealSeconds < 0) elapsedRealSeconds = 0;
+
+    const multiplier = typeof AAT_SPEED_MULTIPLIER !== 'undefined' ? AAT_SPEED_MULTIPLIER : 24;
+    const elapsedGameSeconds = elapsedRealSeconds * multiplier;
+
+    if (elapsedGameSeconds > 0) {
+    const secRate = Math.pow(1.32, elapsedGameSeconds / SECONDS_IN_YEAR);
+    const secRateBN = fromNumber(secRate); // Превращаем float в BigNumber!
+    return mulBN(debtBN, secRateBN);        // Теперь умножаем BigNumber на BigNumber
+}
+
+    return debtBN;
+}
+    
 
         function repayLoanAction() {
-            const debtBN = state.loanDebtBN || createBN(0,0);
-            if (debtBN.m <= 0) {
-                showToast('У вас нет активных кредитов!');
-                return;
-            }
+    const debtBN = getCurrentLoanDebt(); // Считаем точный текущий долг
+    if (!debtBN || debtBN.m <= 0) {
+        showToast('У вас нет активных кредитов!');
+        return;
+    }
 
-            if (compareBN(state.abs, debtBN) < 0) {
-                showToast(`Недостаточно средств! Нужно: ${formatBigNumberBN(debtBN, 2)} €`);
-                return;
-            }
+    if (compareBN(state.abs, debtBN) < 0) {
+        showToast(`Недостаточно средств! Нужно: ${formatBigNumberBN(debtBN, 2)} €`);
+        return;
+    }
 
-            state.abs = subBN(state.abs, debtBN);
-            state.loanDebtBN = createBN(0,0);
-            showToast(`Кредит успешно погашен!`);
-            addHistoryRecord('ПОГАШЕНИЕ', `Погашен долг ${formatBigNumberBN(debtBN, 2)} €`, `-${formatBigNumberBN(debtBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+    state.abs = subBN(state.abs, debtBN);
+    state.loanDebtBN = createBN(0, 0); // Обнуляем долг
+    state.lastLoanCompoundingTime = Date.now() / 1000;
+    state.lastLoanCompoundingRealTime = Date.now() / 1000; // Синхронизируем, чтобы не нулило!
+    state.hasTakenLoan = false; // Сбрасываем флаг
 
-            saveProfile();
-            updateUI();
-            updateLoanUI();
-        }
+    showToast(`Кредит успешно погашен!`);
+    addHistoryRecord('ПОГАШЕНИЕ', `Погашен заём ${formatBigNumberBN(debtBN, 2)} €`, `-${formatBigNumberBN(debtBN, 2)} €`, createBN(1, 0), state.abs, 'EUR', 1.0);
+
+    saveProfile();
+    updateUI();
+    updateLoanUI();
+}
 
         function claimStarterBonus() {
             if (state.hasTakenLoan || state.abs.m > 0) return;
@@ -1385,7 +1584,7 @@
             processDepositCompound();
             const curSec = getAATSecondPrecise();
             if (selectedDepAsset === 'EUR') {
-                document.getElementById('depCurrentRate').innerText = '1.00 € (3%/мес)';
+                document.getElementById('depCurrentRate').innerText = '1.00 €';
                 document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(state.deposits.EUR || createBN(0,0), 2) + ' €';
             } else {
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
@@ -1704,6 +1903,13 @@
                     const tr = document.createElement('tr');
                     const capFormatted = formatBigNumberBN(u.peakCap, 2);
                     
+                    // Делаем строчку кликабельной для просмотра профиля
+                    tr.style.cursor = 'pointer';
+                    tr.style.transition = 'background 0.2s';
+                    tr.onmouseover = () => tr.style.background = 'rgba(255, 255, 255, 0.03)';
+                    tr.onmouseout = () => tr.style.background = 'transparent';
+                    tr.onclick = () => openUserProfile(u.username);
+
                     // Вычисляем реальный статус активности на основе времени последнего действия игрока
                     const lastTime = u.lastActionTime || (u.state && u.state.history && u.state.history.length > 0 ? u.state.history[0].timestamp : 0);
                     const statusText = getPlayerActivityStatus(lastTime);
@@ -1854,7 +2060,7 @@
 
 
 
-        // --- СКРИПТЫ АВТОРИЗАЦИИ И ПРОФИЛЯ v1.3.0 (БЕЗ ДУБЛИКАТОВ ПЕРЕМЕННЫХ) ---
+        // --- СКРИПТЫ АВТОРИЗАЦИИ И ПРОФИЛЯ v1.4 (БЕЗ ДУБЛИКАТОВ ПЕРЕМЕННЫХ) ---
         window.addEventListener('DOMContentLoaded', async () => {
             await syncServerTime();
             initChart();
@@ -1880,6 +2086,7 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
+                console.log('Данные пользователя от сервера:', data);
                 if (data.success) {
                     currentUser = data.user.username;
                     currentPassword = password;
@@ -1889,10 +2096,23 @@
                     localStorage.setItem('ase_password', currentPassword);
                     document.getElementById('loginModal').style.display = 'none';
                     document.getElementById('uName').innerText = currentUser;
-                    document.getElementById('uAvatar').innerText = currentUser.charAt(0).toUpperCase();
-                    updateUI();
+
+// Подтягиваем аватар из профиля или ставим дефолтный
+const avatarElem = document.getElementById('uAvatar');
+if (avatarElem) {
+    if (data.user && data.user.avatarEmoji) {
+        avatarElem.innerText = data.user.avatarEmoji;
+        avatarElem.style.background = data.user.avatarColor || 'var(--accent-blue)';
+    } else {
+        avatarElem.innerText = currentUser.charAt(0).toUpperCase();
+        avatarElem.style.background = 'var(--accent-blue)';
+    }
+}
+
+updateUI();
                     updateChartTick();
                     renderHistory();
+                    loadNotes();
                 } else {
                     localStorage.removeItem('ase_password');
                     document.getElementById('loginModal').style.display = 'flex';
@@ -1967,16 +2187,22 @@
             document.getElementById('profileModal').style.display = 'none';
         }
 
-        function selectEmoji(emoji) {
+        function selectEmoji(emoji, element) {
             tempSelectedEmoji = emoji;
+            // Убираем класс со всех и переносим на нажатую
+            document.querySelectorAll('.emoji-option').forEach(el => el.classList.remove('selected'));
+            if (element) element.classList.add('selected');
             updateAvatarPreviewUI();
         }
 
-        function selectColor(color) {
+        function selectColor(color, element) {
             tempSelectedColor = color;
+            // Убираем класс со всех цветов и переносим на нажатый
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+            if (element) element.classList.add('selected');
             updateAvatarPreviewUI();
         }
-
+        
         function updateAvatarPreviewUI() {
             const preview = document.getElementById('profileAvatarPreview');
             if(preview) {
@@ -2138,6 +2364,302 @@
         console.error('[Save] Ошибка сохранения:', e);
     }
 }
+
+// --- ЛОГИКА БЛОКНОТА ТРЕЙДЕРА (до 50 заметок, пагинация по 10) ---
+let currentNotes = [];
+let currentNotePage = 1;
+const NOTES_PER_PAGE = 10;
+const MAX_NOTES = 50;
+
+async function loadNotes() {
+    if (!currentUser) return;
+    try {
+        const res = await fetch('/api/notes/get', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, password: currentPassword })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentNotes = data.notes || [];
+            renderNotes();
+        }
+    } catch (e) {
+        console.error('[Notes] Ошибка загрузки:', e);
+    }
+}
+
+function updateCharCounts() {
+    const titleField = document.getElementById('noteTitleInput');
+    const textField = document.getElementById('noteTextInput');
+    if (!titleField || !textField) return;
+
+    document.getElementById('titleCharCount').innerText = `${titleField.value.length} / 40`;
+    document.getElementById('textCharCount').innerText = `${textField.value.length} / 1536`;
+}
+
+function renderNotes() {
+    const container = document.getElementById('notesContainer');
+    const totalCountEl = document.getElementById('notesTotalCount');
+    const addBtn = document.getElementById('addNoteBtn');
+    const titleInput = document.getElementById('noteTitleInput');
+    const textInput = document.getElementById('noteTextInput');
+
+    if (!container || !totalCountEl) return;
+
+    totalCountEl.innerText = `${currentNotes.length} / ${MAX_NOTES}`;
+
+    // Блокируем поля при достижении лимита в 50 штук
+    const isFull = currentNotes.length >= MAX_NOTES;
+    if (addBtn) addBtn.disabled = isFull;
+    if (titleInput) titleInput.disabled = isFull;
+    if (textInput) textInput.disabled = isFull;
+
+    // Пагинация
+    const totalPages = Math.ceil(currentNotes.length / NOTES_PER_PAGE) || 1;
+    if (currentNotePage > totalPages) currentNotePage = totalPages;
+
+    const startIndex = (currentNotePage - 1) * NOTES_PER_PAGE;
+    const pageNotes = currentNotes.slice(startIndex, startIndex + NOTES_PER_PAGE);
+
+    container.innerHTML = '';
+    if (pageNotes.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 15px; font-size: 13px;">Заметок пока нет</div>';
+    } else {
+        pageNotes.forEach(note => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: #111113; padding: 12px; border-radius: 6px; border: 1px solid #333;';
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <strong style="font-size: 14px; color: #e2e8f0; word-break: break-word;">${escapeHtml(note.title)}</strong>
+                    <button onclick="deleteNote(${note.id})" style="background: #ef4444; color: white; border: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 12px;">✕</button>
+                </div>
+                <p style="margin: 0; font-size: 13px; color: #94a3b8; white-space: pre-wrap; word-break: break-word;">${escapeHtml(note.text)}</p>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    renderNotesPagination(totalPages);
+}
+
+function renderNotesPagination(totalPages) {
+    const pagEl = document.getElementById('pagination');
+    if (!pagEl) return;
+    pagEl.innerHTML = '';
+
+    const maxPagesToShow = Math.min(totalPages, 5);
+
+    for (let i = 1; i <= maxPagesToShow; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.style.cssText = `padding: 4px 10px; border: 1px solid #333; background: ${i === currentNotePage ? 'var(--accent-blue)' : '#111113'}; color: ${i === currentNotePage ? '#000' : '#fff'}; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;`;
+        btn.onclick = () => {
+            currentNotePage = i;
+            renderNotes();
+        };
+        pagEl.appendChild(btn);
+    }
+}
+
+async function createNote() {
+    if (!currentUser) return;
+    const titleInput = document.getElementById('noteTitleInput');
+    const textInput = document.getElementById('noteTextInput');
+    
+    const title = titleInput ? titleInput.value.trim() : '';
+    const text = textInput ? textInput.value.trim() : '';
+
+    if (!text) {
+        showToast('Введите текст заметки!');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/notes/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, password: currentPassword, title, text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentNotes = data.notes;
+            if (titleInput) titleInput.value = '';
+            if (textInput) textInput.value = '';
+            updateCharCounts();
+            currentNotePage = Math.ceil(currentNotes.length / NOTES_PER_PAGE);
+            renderNotes();
+            showToast('Заметка сохранена!');
+        } else {
+            showToast(data.error || 'Ошибка сохранения');
+        }
+    } catch (e) {
+        console.error('[Notes] Ошибка сохранения:', e);
+    }
+}
+
+async function deleteNote(id) {
+    if (!currentUser) return;
+    try {
+        const res = await fetch('/api/notes/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUser, password: currentPassword, id })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentNotes = data.notes;
+            renderNotes();
+            showToast('Заметка удалена');
+        }
+    } catch (e) {
+        console.error('[Notes] Ошибка удаления:', e);
+    }
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Вызывай loadNotes() при успешном входе пользователя (например, в конце функции авто-входа и performLogin)
+
+async function openUserProfile(username) {
+    try {
+        const res = await fetch(`/api/user/profile?username=${encodeURIComponent(username)}`);
+        const data = await res.json();
+        
+        if (data.success && data.user) {
+            const u = data.user;
+            
+            document.getElementById('viewProfileName').innerText = u.username;
+            document.getElementById('viewProfileTag').innerText = u.tag || '#USER';
+            document.getElementById('viewProfileCapital').innerText = formatBigNumberBN(u.capital, 2) + ' €';
+            document.getElementById('viewProfileBio').innerText = u.bio ? u.bio : 'Трейдер предпочитает хранить молчание.';
+            
+            const avatarElem = document.getElementById('viewProfileAvatar');
+            if (u.avatarEmoji) {
+                avatarElem.innerText = u.avatarEmoji;
+                avatarElem.style.background = u.avatarColor || 'var(--accent-blue)';
+            } else {
+                avatarElem.innerText = u.username.charAt(0).toUpperCase();
+                avatarElem.style.background = 'var(--accent-blue)';
+            }
+            
+            document.getElementById('viewProfileModal').style.display = 'flex';
+        } else {
+            console.error('Не удалось загрузить профиль');
+        }
+    } catch (e) {
+        console.error('Ошибка при загрузке профиля:', e);
+    }
+}
+
+function closeViewProfileModal() {
+    document.getElementById('viewProfileModal').style.display = 'none';
+}
+
+// === КЛИЕНТСКИЙ СКРИПТ ЧАТА (TROLLBOX) ===
+let chatPollInterval = null;
+
+function updateChatCharCount() {
+    const input = document.getElementById('chatInput');
+    if (input) {
+        const countSpan = document.getElementById('chatCharCount');
+        if (countSpan) countSpan.innerText = `${input.value.length} / 280`;
+    }
+}
+
+async function loadChatMessages() {
+    try {
+        const res = await fetch('/api/chat/messages');
+        const data = await res.json();
+        if (data.success) {
+            renderChatMessages(data.messages);
+        }
+    } catch (e) {
+        console.error('[Chat] Ошибка загрузки:', e);
+    }
+}
+
+function renderChatMessages(messages) {
+    const container = document.getElementById('chatMessagesContainer');
+    if (!container) return;
+
+    const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+
+    container.innerHTML = '';
+    if (!messages || messages.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">В чате пока нет сообщений</div>';
+        return;
+    }
+
+    messages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.cssText = 'display: flex; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(42,55,84,0.4); align-items: flex-start;';
+        
+        const avatarBg = msg.avatarColor || 'var(--accent-blue)';
+        const avatarEmoji = msg.avatarEmoji || '👤';
+
+        msgDiv.innerHTML = `
+            <div onclick="openUserProfile('${escapeHtml(msg.username || '')}')" style="width: 32px; height: 32px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; flex-shrink: 0;" title="Открыть профиль">
+                ${avatarEmoji}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <div>
+                        <strong onclick="openUserProfile('${escapeHtml(msg.username || '')}')" style="color: #fff; cursor: pointer; font-size: 0.85rem;" class="chat-username">${escapeHtml(msg.username || '')}</strong>
+                        <span style="color: var(--text-muted); font-size: 0.72rem; margin-left: 4px;">${escapeHtml(msg.tag || '')}</span>
+                    </div>
+                    <span style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">${formatAATTimestamp ? formatAATTimestamp(msg.timestamp, false) : ''} AAT</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-main); word-break: break-word; line-height: 1.3;">
+                    ${escapeHtml(msg.text || '')}
+                </div>
+            </div>
+        `;
+        container.appendChild(msgDiv);
+    });
+
+    if (isAtBottom) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+async function sendChatMessage() {
+    if (!currentUser) {
+        showToast('Авторизуйтесь для отправки сообщений!');
+        return;
+    }
+
+    const input = document.getElementById('chatInput');
+    const text = input ? input.value.trim() : '';
+
+    if (!text) return;
+
+    try {
+        const res = await fetch('/api/chat/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                password: currentPassword,
+                text: text,
+                aatTimestamp: getAATSecondPrecise() // Передаем корректное игровое время Айналандии!
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            input.value = '';
+            updateChatCharCount();
+            loadChatMessages();
+        } else {
+            showToast(data.error || 'Ошибка отправки');
+        }
+    } catch (e) {
+        console.error('[Chat] Ошибка отправки:', e);
+    }
+}
+
     </script>
 </body>
 </html>

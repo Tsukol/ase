@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ainalandia Stock Exchange (ASE) v1.4</title>
+    <title>Depasibo Terminal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* --- Стили для модальных окон v1.4 --- */
@@ -298,7 +298,7 @@
     <!-- МОДАЛКА ВХОДА / РЕГИСТРАЦИИ v1.4 (ВНУТРИ BODY) -->
     <div id="loginModal" class="modal-overlay">
         <div class="modal-box">
-            <h2>🔑 Вход в ASE v1.4</h2>
+            <h2>🔑 Вход в Depasibo v1.4</h2>
             <div class="modal-info-box">
                 Если аккаунта еще нет или он без пароля — введенный пароль закрепится за вами. Если аккаунт существует — введите действующий пароль.
             </div>
@@ -432,10 +432,10 @@
                     <div class="dropdown-item" onclick="switchUser()">🚪 Сменить профиль</div>
                 </div>
             </div>
-            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">ASE TERMINAL v1.4</div>
+            <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">DEPASIBO TERMINAL</div>
         </div>
 
-        <div class="aat-clock" id="aatClockDisplay">Время по AAT: Загрузка...</div>
+        <div class="aat-clock" id="aatClockDisplay">Время по DPT: Загрузка...</div>
 
         <div class="balance-card">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">БАЛАНС (€)</div>
@@ -448,10 +448,10 @@
             </div>
 
             <div class="assets-grid">
-                <div class="asset-box" id="box-AITH">
-                    <div class="asset-title"><span>AITH</span><span id="rate-AITH" style="color:#fff; font-family:monospace;">0.00€</span></div>
-                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-AITH">0.00</span> <span id="pnl-long-AITH">—</span></div>
-                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-AITH">0.00</span> <span id="pnl-short-AITH">—</span></div>
+                <div class="asset-box" id="box-ROTH">
+                    <div class="asset-title"><span>ROTH</span><span id="rate-ROTH" style="color:#fff; font-family:monospace;">0.00€</span></div>
+                    <div class="asset-pos-line"><span class="pos-long-tag">L:</span> <span id="long-ROTH">0.00</span> <span id="pnl-long-ROTH">—</span></div>
+                    <div class="asset-pos-line"><span class="pos-short-tag">S:</span> <span id="short-ROTH">0.00</span> <span id="pnl-short-ROTH">—</span></div>
                 </div>
                 <div class="asset-box" id="box-SOFF">
                     <div class="asset-title"><span>SOFF</span><span id="rate-SOFF" style="color:#fff; font-family:monospace;">0.00€</span></div>
@@ -484,8 +484,8 @@
         <div id="tradeTab" class="tab-content">
             <div class="chart-card">
                 <div class="chart-controls">
-                    <span style="font-size: 0.85rem; font-weight: 600;" id="chartTitle">Котировки: AITH</span>
-                    <div style="font-size: 0.75rem; color: var(--accent-blue); background: rgba(0,242,254,0.1); padding: 4px 10px; border-radius: 6px; font-weight: bold;">📈 1Ч</div>
+                    <span style="font-size: 0.85rem; font-weight: 600;" id="chartTitle">Котировки: ROTH</span>
+                    <div style="font-size: 0.75rem; color: var(--accent-blue); background: rgba(0,242,254,0.1); padding: 4px 10px; border-radius: 6px; font-weight: bold;">📈 2Ч</div>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="marketChart"></canvas>
@@ -494,7 +494,7 @@
 
             <div class="trade-card">
                 <div class="selector-row">
-                    <button class="btn-asset active" onclick="selectAsset('AITH', this)">AITH</button>
+                    <button class="btn-asset active" onclick="selectAsset('ROTH', this)">ROTH</button>
                     <button class="btn-asset" onclick="selectAsset('SOFF', this)">SOFF</button>
                     <button class="btn-asset" onclick="selectAsset('BIOM', this)">BIOM</button>
                     <button class="btn-asset purple" onclick="selectAsset('VOID', this)">VOID</button>
@@ -556,7 +556,7 @@
                 </div>
 
                 <div class="selector-row">
-                    <button class="btn-asset purple active" onclick="selectDepAsset('AITH', this)">AITH</button>
+                    <button class="btn-asset purple active" onclick="selectDepAsset('ROTH', this)">ROTH</button>
                     <button class="btn-asset purple" onclick="selectDepAsset('SOFF', this)">SOFF</button>
                     <button class="btn-asset purple" onclick="selectDepAsset('BIOM', this)">BIOM</button>
                     <button class="btn-asset purple" onclick="selectDepAsset('VOID', this)">VOID</button>
@@ -599,7 +599,7 @@
         <div id="loanTab" class="tab-content hidden">
             <div class="loan-card">
                 <div class="loan-header">
-                    <div class="loan-title">💳 Кредитный терминал ASE</div>
+                    <div class="loan-title">💳 Кредитный терминал</div>
                     <div class="loan-info">Условия: +8% за взятие + 32% годовых</div>
                 </div>
 
@@ -638,10 +638,10 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 4: НОВОСТИ ASE -->
+        <!-- ВКЛАДКА 4: НОВОСТИ БИРЖИ - ТЕОРИЯ ПОЛОМАННОГО КОДА. ДОРОГОЙ ЧИТАТЕЛЬ КОДА, ТЫ НАШЁЛ ПАСХАЛКУ! ПОЭТОМУ РАССКАЖУ КАК ТУТ ИКСЫ ЗАРАБОТАТЬ. Просто заходи в игру в 15-ю и 45-ю минуту каждого часа реального времени (UTC) когда будет памп или дамп, и на все деньги открывай лонг если дамп, и шорт - если памп. И залутаешь по максимуму -->
         <div id="newsTab" class="tab-content hidden">
             <div class="news-card">
-                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка ASE</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">📰 Хроника рынка Depasibo</div>
                 <div style="font-size: 0.75rem; color: var(--text-muted);">Новости выходят каждый день в 12:00. (Отображаются последние 100).</div>
                 <div class="news-list" id="newsListContainer"></div>
             </div>
@@ -753,8 +753,8 @@
     <script>
         let currentUser = null;
         let currentPassword = '';
-        let selectedAsset = 'AITH';
-        let selectedDepAsset = 'AITH';
+        let selectedAsset = 'ROTH';
+        let selectedDepAsset = 'ROTH';
         let tradeMode = 'LONG';
         let tradePercent = 100;
         let depPercent = 100;
@@ -764,7 +764,7 @@
         let tempSelectedColor = '#00f2fe';
         let currentUserTag = '#TAG';
         
-        const TICK_INTERVAL_SECONDS = 12;
+        const TICK_INTERVAL_SECONDS = 24;
         const ITEMS_PER_PAGE = 25;
         const MAX_PAGES = 100;
         let currentPage = 1;
@@ -772,7 +772,7 @@
         let serverTimeOffset = 0;
         let REAL_BASE_UNIX = 1793491200;
         const AAT_BASE_TIMESTAMP = 0;
-        const AAT_SPEED_MULTIPLIER = 24;
+        const AAT_SPEED_MULTIPLIER = 48;
         const NEWS_SEED_OFFSET = 884920111;
         const SECONDS_IN_MONTH = 2592000;
 
@@ -919,7 +919,7 @@
             let mins = String(Math.floor((secOfCurrentDay % 3600) / 60)).padStart(2, '0');
             let secs = String(secOfCurrentDay % 60).padStart(2, '0');
 
-            let year = 2466;
+            let year = 2500;
             while (true) {
                 let dInYear = getDaysInYear(year);
                 if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
@@ -937,10 +937,10 @@
         }
 
         const assetConfigs = {
-            AITH: { basePrice: 25.0, vol: 0.003, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
-            SOFF: { basePrice: 75.0, vol: 0.006, color: '#10b981', seedOffset: 202, timeScale: 0.98 },
-            BIOM: { basePrice: 125.0, vol: 0.009, color: '#ef4444', seedOffset: 303, timeScale: 0.96 },
-            VOID: { basePrice: 275.0, vol: 0.015, color: '#8b5cf6', seedOffset: 404, timeScale: 0.94 }
+            ROTH: { basePrice: 25.0, vol: 0.003, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
+            SOFF: { basePrice: 75.0, vol: 0.006, color: '#10b981', seedOffset: 202, timeScale: 0.97 },
+            BIOM: { basePrice: 125.0, vol: 0.009, color: '#ef4444', seedOffset: 303, timeScale: 0.94 },
+            VOID: { basePrice: 225.0, vol: 0.014, color: '#8b5cf6', seedOffset: 404, timeScale: 0.91 }
         };
 
         const SHARE_DEP_RATE = Math.pow(1.02341, 1 / SECONDS_IN_MONTH);
@@ -949,12 +949,12 @@
 
         let state = {
             abs: { m: 0, e: 0 },
-            assets: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-            avgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-            shorts: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-            shortAvgPrices: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-            shortMargins: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
-            deposits: { AITH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
+            assets: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            avgPrices: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shorts: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shortAvgPrices: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            shortMargins: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0} },
+            deposits: { ROTH: {m:0,e:0}, SOFF: {m:0,e:0}, BIOM: {m:0,e:0}, VOID: {m:0,e:0}, EUR: {m:0,e:0} },
             lastDepTime: Date.now() / 1000,
             hasTakenLoan: false,
             loanDebtBN: { m: 0, e: 0 },
@@ -975,37 +975,37 @@
         }
 
         const newsTemplates = {
-    AITH: [
-        { type: 'PUMP', text: 'AinaTech заключила крупный контракт на поставку квантовых процессоров.', mult: 1.25 },
-        { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций AinaTech.', mult: 0.80 },
-        { type: 'PUMP', text: 'Анонсирована революционная операционная система от AinaTech.', mult: 1.60 },
-        { type: 'DUMP', text: 'В серверах AinaTech обнаружена критическая уязвимость нулевого дня.', mult: 0.625 },
-        { type: 'PUMP', text: 'AinaTech поглощает перспективный стартап в сфере ИИ.', mult: 2.00 },
-        { type: 'DUMP', text: 'Антимонопольный комитет начал расследование против AinaTech.', mult: 0.50 }
+    ROTH: [
+        { type: 'PUMP', text: 'RoboTech заключила крупный контракт на поставку квантовых процессоров.', mult: 1.15 },
+        { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций RoboTech.', mult: 0.87 },
+        { type: 'PUMP', text: 'Анонсирована революционная операционная система от RoboTech.', mult: 1.25 },
+        { type: 'DUMP', text: 'В серверах RoboTech обнаружена критическая уязвимость нулевого дня.', mult: 0.80 },
+        { type: 'PUMP', text: 'RoboTech поглощает перспективный стартап в сфере ИИ.', mult: 1.35 },
+        { type: 'DUMP', text: 'Антимонопольный комитет начал расследование против RoboTech.', mult: 0.74 }
     ],
     SOFF: [
-        { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 1.50 },
-        { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.67 },
-        { type: 'PUMP', text: 'Запущен масштабный проект по модернизации энергосистемы города.', mult: 1.80 },
-        { type: 'DUMP', text: 'Масштабная авария на главной подстанции SvetOFF.', mult: 0.56 },
-        { type: 'PUMP', text: 'Правительство субсидирует зеленую энергетику SvetOFF.', mult: 2.50 },
-        { type: 'DUMP', text: 'Резкий рост цен на сырье обвалил маржинальность SvetOFF.', mult: 0.40 }
+        { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 1.25 },
+        { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.80 },
+        { type: 'PUMP', text: 'Запущен масштабный проект по модернизации энергосистемы города.', mult: 1.35 },
+        { type: 'DUMP', text: 'Масштабная авария на главной подстанции SvetOFF.', mult: 0.74 },
+        { type: 'PUMP', text: 'Правительство субсидирует зеленую энергетику SvetOFF.', mult: 1.50 },
+        { type: 'DUMP', text: 'Резкий рост цен на сырье обвалил маржинальность SvetOFF.', mult: 0.67 }
     ],
     BIOM: [
-        { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 1.50 },
-        { type: 'DUMP', text: 'Приостановлена лицензия BioMusor из-за экологических тестов.', mult: 0.67 },
-        { type: 'PUMP', text: 'BioMusor открывает сеть заводов по переработке нового поколения.', mult: 2.00 },
-        { type: 'DUMP', text: 'Партия биоматериалов BioMusor признана бракованной.', mult: 0.50 },
-        { type: 'PUMP', text: 'Глобальный тренд на эко-стандарты вывел BioMusor в топ.', mult: 2.50 },
-        { type: 'DUMP', text: 'Скандал с утилизацией отходов ударил по репутации BioMusor.', mult: 0.40 }
+        { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 1.35 },
+        { type: 'DUMP', text: 'Приостановлена лицензия BioMusor из-за экологических тестов.', mult: 0.74 },
+        { type: 'PUMP', text: 'BioMusor открывает сеть заводов по переработке нового поколения.', mult: 1.50 },
+        { type: 'DUMP', text: 'Партия биоматериалов BioMusor признана бракованной.', mult: 0.67 },
+        { type: 'PUMP', text: 'Глобальный тренд на эко-стандарты вывел BioMusor в топ.', mult: 1.65 },
+        { type: 'DUMP', text: 'Скандал с утилизацией отходов ударил по репутации BioMusor.', mult: 0.61 }
     ],
     VOID: [
-        { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 2.75 },
-        { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.37 },
-        { type: 'PUMP', text: 'Секретный эксперимент Void Energy увенчался колоссальным успехом.', mult: 3.50 },
-        { type: 'DUMP', text: 'Ученые фиксируют опасную нестарость полей вокруг реактора Void.', mult: 0.29 },
-        { type: 'PUMP', text: 'Абсолютный прорыв: Void Energy открывает источник неисчерпаемой энергии!', mult: 4.00 },
-        { type: 'DUMP', text: 'Полная остановка реактора Void Energy из-за аномального сбоя.', mult: 0.25 }
+        { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 1.50 },
+        { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.67 },
+        { type: 'PUMP', text: 'Секретный эксперимент Void Energy увенчался колоссальным успехом.', mult: 1.65 },
+        { type: 'DUMP', text: 'Ученые фиксируют опасную нестарость полей вокруг реактора Void.', mult: 0.61 },
+        { type: 'PUMP', text: 'Абсолютный прорыв: Void Energy открывает источник неисчерпаемой энергии!', mult: 1.85 },
+        { type: 'DUMP', text: 'Полная остановка реактора Void Energy из-за аномального сбоя.', mult: 0.54 }
     ]
 };
 
@@ -1014,7 +1014,7 @@
         function getNewsMultiplierAtSecond(targetAATSecond, asset) {
             const currentBlock = Math.floor((Math.floor(targetAATSecond / 86400) - 1) / 1);
             let accumulatedMult = 1.0;
-            const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
+            const assetsArr = ['ROTH', 'SOFF', 'BIOM', 'VOID'];
 
             for (let b = 0; b <= currentBlock; b++) {
                 const exactNewsTime = getNewsExactTime(b);
@@ -1028,7 +1028,23 @@
                     const floorLevel = tpl.type === 'PUMP' ? 1.06 : 0.95;
 
                     if (elapsed >= 0 && elapsed < 21600) {
-                        accumulatedMult *= (tpl.mult + (floorLevel - tpl.mult) * (elapsed / 21600));
+                        // Как сделать «живое» восстановление:
+const progress = elapsed / 21600; // от 0.0 до 1.0
+
+// 1. Быстрый спад в начале, замедление к концу (экспонента)
+const decay = Math.exp(-3 * progress); 
+
+// 2. Отскоки (затухающая синусоида: рынки всегда пробуют вернуться назад пару раз)
+const wave = Math.sin(progress * Math.PI * 3.5) * 0.15 * decay;
+
+// 3. Псевдорандомный микро-шум конкретно для этого тика новости
+const newsNoise = (getSeedRandom(b + asset.length * 17) - 0.5) * 0.05 * decay;
+
+// Склеиваем мультипликатор:
+const dynamicFactor = decay + wave + newsNoise;
+const currentMult = floorLevel + (tpl.mult - floorLevel) * dynamicFactor;
+
+accumulatedMult *= currentMult;
                     } else if (elapsed >= 21600) {
                         accumulatedMult *= floorLevel;
                     }
@@ -1040,7 +1056,7 @@
         function getActiveNewsHistory() {
             const currentAAT = getAATSecondPrecise();
             const currentBlock = Math.floor((Math.floor(currentAAT / 86400) - 1) / 1);
-            const assetsArr = ['AITH', 'SOFF', 'BIOM', 'VOID'];
+            const assetsArr = ['ROTH', 'SOFF', 'BIOM', 'VOID'];
             const history = [];
 
             for (let b = Math.max(0, currentBlock - 100); b <= currentBlock; b++) {
@@ -1140,7 +1156,7 @@
                     return normalizeBN({ m: Math.pow(10, newLog - newE), e: newE });
                 }
 
-                ['AITH', 'SOFF', 'BIOM'].forEach(a => { if (state.deposits[a]) state.deposits[a] = compoundBN(state.deposits[a], SHARE_DEP_RATE); });
+                ['ROTH', 'SOFF', 'BIOM'].forEach(a => { if (state.deposits[a]) state.deposits[a] = compoundBN(state.deposits[a], SHARE_DEP_RATE); });
                 if (state.deposits.VOID) state.deposits.VOID = compoundBN(state.deposits.VOID, VOID_DEP_RATE);
                 if (state.deposits.EUR) state.deposits.EUR = compoundBN(state.deposits.EUR, EUR_DEP_RATE);
             }
@@ -1148,7 +1164,7 @@
 
         function checkShortLiquidations() {
             const curSec = getAATSecondPrecise();
-            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
+            ['ROTH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
                 const shortShares = state.shorts[asset] || createBN(0, 0);
                 if (shortShares.m > 0) {
                     const priceBN = getAbsolutePriceAtSecond(curSec, asset);
@@ -1169,7 +1185,7 @@
         }
 
         function updateAATClockFast() {
-            document.getElementById('aatClockDisplay').innerText = `Время по AAT: ${formatAATTimestamp(getAATSecondPrecise(), true)}`;
+            document.getElementById('aatClockDisplay').innerText = `Время по DPT: ${formatAATTimestamp(getAATSecondPrecise(), true)}`;
         }
 
         function switchTab(tabId) {
@@ -1452,7 +1468,7 @@ function getCurrentLoanDebt() {
 
             if (state.deposits && state.deposits.EUR) capBN = addBN(capBN, state.deposits.EUR);
 
-            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(a => {
+            ['ROTH', 'SOFF', 'BIOM', 'VOID'].forEach(a => {
                 const priceBN = getAbsolutePriceAtSecond(curSec, a);
                 const shares = addBN(state.assets[a] || createBN(0,0), state.deposits[a] || createBN(0,0));
                 capBN = addBN(capBN, mulBN(shares, priceBN));
@@ -1501,7 +1517,7 @@ function getCurrentLoanDebt() {
 
         function updateBalanceGridAssets() {
             const curSec = getAATSecondPrecise();
-            ['AITH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
+            ['ROTH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
                 const priceBN = getAbsolutePriceAtSecond(curSec, asset);
                 const rateElem = document.getElementById(`rate-${asset}`);
                 if (rateElem) rateElem.innerText = formatBigNumberBN(priceBN, 2) + '€';
@@ -2086,7 +2102,7 @@ function getCurrentLoanDebt() {
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                console.log('Данные пользователя от сервера:', data);
+                //console.log('Данные пользователя от сервера:', data);
                 if (data.success) {
                     currentUser = data.user.username;
                     currentPassword = password;
@@ -2320,7 +2336,7 @@ updateUI();
             let totalDays = Math.floor(sec / 86400);
             let secOfCurrentDay = sec % 86400;
 
-            let year = 2466;
+            let year = 2500;
             while (true) {
                 let dInYear = getDaysInYear(year);
                 if (totalDays >= dInYear) { totalDays -= dInYear; year++; } else break;
@@ -2559,6 +2575,11 @@ function closeViewProfileModal() {
 }
 
 // === КЛИЕНТСКИЙ СКРИПТ ЧАТА (TROLLBOX) ===
+
+//я тебе щас код удалю! © Младший Брат, 09.11.2026
+
+//© никто которого звать никак. Никакие права не защищены, поэтому если вы спиздите этот код вам нихуя не будет. Код написан за 10 дней с помощью ИИ. Оцените игру хорошей оценкой (правда где оценивать я и сам не ебу, ну короче в чате игры в котором нет цензуры и можно что угодно писать и никому за это ничего не будет оцените)
+
 let chatPollInterval = null;
 
 function updateChatCharCount() {
@@ -2644,7 +2665,7 @@ async function sendChatMessage() {
                 username: currentUser,
                 password: currentPassword,
                 text: text,
-                aatTimestamp: getAATSecondPrecise() // Передаем корректное игровое время Айналандии!
+                aatTimestamp: getAATSecondPrecise() // Передаем корректное игровое время!
             })
         });
         const data = await res.json();
@@ -2663,3 +2684,4 @@ async function sendChatMessage() {
     </script>
 </body>
 </html>
+

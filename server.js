@@ -150,7 +150,7 @@ app.post('/api/user/login', (req, res) => {
             avatarColor: '#00f2fe',
             bio: '',
             notes: [],
-            lastRenameAATYear: 2466,
+            lastRenameAATYear: 2500,
             state: null
         };
         usersData[cleanName] = user;

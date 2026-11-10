@@ -166,7 +166,7 @@
         .dropdown-item:last-child { border-bottom: none; }
         .dropdown-item:hover { background: rgba(0, 242, 254, 0.1); color: var(--accent-blue); }
 
-        .aat-clock { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 0.85rem; font-family: monospace; color: #d8b4fe; font-weight: bold; }
+        .DPT-clock { background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); border-radius: 10px; padding: 8px 12px; text-align: center; font-size: 0.85rem; font-family: monospace; color: #d8b4fe; font-weight: bold; }
 
         .nav-tabs { display: flex; gap: 4px; background: var(--card-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
         .nav-tab { flex: 1; padding: 10px 2px; text-align: center; background: transparent; border: none; color: var(--text-muted); font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 0.72rem; transition: all 0.2s; }
@@ -435,7 +435,7 @@
             <div style="font-size:0.8rem; font-weight:bold; color:var(--accent-blue);">DEPASIBO TERMINAL</div>
         </div>
 
-        <div class="aat-clock" id="aatClockDisplay">Время по DPT: Загрузка...</div>
+        <div class="DPT-clock" id="DPTClockDisplay">Время по DPT: Загрузка...</div>
 
         <div class="balance-card">
             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">БАЛАНС (€)</div>
@@ -771,8 +771,8 @@
 
         let serverTimeOffset = 0;
         let REAL_BASE_UNIX = 1793491200;
-        const AAT_BASE_TIMESTAMP = 0;
-        const AAT_SPEED_MULTIPLIER = 48;
+        const DPT_BASE_TIMESTAMP = 0;
+        const DPT_SPEED_MULTIPLIER = 48;
         const NEWS_SEED_OFFSET = 884920111;
         const SECONDS_IN_MONTH = 2592000;
 
@@ -904,13 +904,13 @@
         function getDaysInMonth(year, month) { return [31, isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1]; }
         function getDaysInYear(year) { return isLeapYear(year) ? 366 : 365; }
 
-        function getAATSecondPrecise() {
+        function getDPTSecondPrecise() {
             const currentServerUnixPrecise = (Date.now() / 1000) + serverTimeOffset;
             const elapsedRealSeconds = currentServerUnixPrecise - REAL_BASE_UNIX;
-            return AAT_BASE_TIMESTAMP + (elapsedRealSeconds * AAT_SPEED_MULTIPLIER);
+            return DPT_BASE_TIMESTAMP + (elapsedRealSeconds * DPT_SPEED_MULTIPLIER);
         }
 
-        function formatAATTimestamp(secInput, includeSeconds = true) {
+        function formatDPTTimestamp(secInput, includeSeconds = true) {
             let sec = Math.floor(secInput);
             let totalDays = Math.floor(sec / 86400);
             let secOfCurrentDay = sec % 86400;
@@ -937,10 +937,10 @@
         }
 
         const assetConfigs = {
-            ROTH: { basePrice: 25.0, vol: 0.003, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
-            SOFF: { basePrice: 75.0, vol: 0.006, color: '#10b981', seedOffset: 202, timeScale: 0.97 },
-            BIOM: { basePrice: 125.0, vol: 0.009, color: '#ef4444', seedOffset: 303, timeScale: 0.94 },
-            VOID: { basePrice: 225.0, vol: 0.014, color: '#8b5cf6', seedOffset: 404, timeScale: 0.91 }
+            ROTH: { basePrice: 25.0, vol: 0.0032, color: '#00f2fe', seedOffset: 101, timeScale: 1.00 },
+            SOFF: { basePrice: 75.0, vol: 0.0056, color: '#10b981', seedOffset: 202, timeScale: 0.95 },
+            BIOM: { basePrice: 125.0, vol: 0.0084, color: '#ef4444', seedOffset: 303, timeScale: 0.90 },
+            VOID: { basePrice: 225.0, vol: 0.0116, color: '#8b5cf6', seedOffset: 404, timeScale: 0.85 }
         };
 
         const SHARE_DEP_RATE = Math.pow(1.02341, 1 / SECONDS_IN_MONTH);
@@ -976,55 +976,55 @@
 
         const newsTemplates = {
     ROTH: [
-        { type: 'PUMP', text: 'RoboTech заключила крупный контракт на поставку квантовых процессоров.', mult: 1.15 },
-        { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций RoboTech.', mult: 0.87 },
-        { type: 'PUMP', text: 'Анонсирована революционная операционная система от RoboTech.', mult: 1.25 },
-        { type: 'DUMP', text: 'В серверах RoboTech обнаружена критическая уязвимость нулевого дня.', mult: 0.80 },
-        { type: 'PUMP', text: 'RoboTech поглощает перспективный стартап в сфере ИИ.', mult: 1.35 },
-        { type: 'DUMP', text: 'Антимонопольный комитет начал расследование против RoboTech.', mult: 0.74 }
-    ],
-    SOFF: [
-        { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 1.25 },
-        { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.80 },
-        { type: 'PUMP', text: 'Запущен масштабный проект по модернизации энергосистемы города.', mult: 1.35 },
-        { type: 'DUMP', text: 'Масштабная авария на главной подстанции SvetOFF.', mult: 0.74 },
-        { type: 'PUMP', text: 'Правительство субсидирует зеленую энергетику SvetOFF.', mult: 1.50 },
-        { type: 'DUMP', text: 'Резкий рост цен на сырье обвалил маржинальность SvetOFF.', mult: 0.67 }
-    ],
-    BIOM: [
-        { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 1.35 },
-        { type: 'DUMP', text: 'Приостановлена лицензия BioMusor из-за экологических тестов.', mult: 0.74 },
-        { type: 'PUMP', text: 'BioMusor открывает сеть заводов по переработке нового поколения.', mult: 1.50 },
-        { type: 'DUMP', text: 'Партия биоматериалов BioMusor признана бракованной.', mult: 0.67 },
-        { type: 'PUMP', text: 'Глобальный тренд на эко-стандарты вывел BioMusor в топ.', mult: 1.65 },
-        { type: 'DUMP', text: 'Скандал с утилизацией отходов ударил по репутации BioMusor.', mult: 0.61 }
-    ],
-    VOID: [
-        { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 1.50 },
-        { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.67 },
-        { type: 'PUMP', text: 'Секретный эксперимент Void Energy увенчался колоссальным успехом.', mult: 1.65 },
-        { type: 'DUMP', text: 'Ученые фиксируют опасную нестарость полей вокруг реактора Void.', mult: 0.61 },
-        { type: 'PUMP', text: 'Абсолютный прорыв: Void Energy открывает источник неисчерпаемой энергии!', mult: 1.85 },
-        { type: 'DUMP', text: 'Полная остановка реактора Void Energy из-за аномального сбоя.', mult: 0.54 }
-    ]
+            { type: 'PUMP', text: 'RoboTech заключила крупный контракт на поставку квантовых процессоров.', mult: 1.15 },
+            { type: 'DUMP', text: 'Крупный инвестор сбросил пакет акций RoboTech.', mult: 0.87 },
+            { type: 'PUMP', text: 'Анонсирована революционная операционная система от RoboTech.', mult: 1.25 },
+            { type: 'DUMP', text: 'В серверах RoboTech обнаружена критическая уязвимость нулевого дня.', mult: 0.80 },
+            { type: 'PUMP', text: 'RoboTech поглощает перспективный стартап в сфере ИИ.', mult: 1.35 },
+            { type: 'DUMP', text: 'Антимонопольный комитет начал расследование против RoboTech.', mult: 0.74 }
+        ],
+        SOFF: [
+            { type: 'PUMP', text: 'SvetOFF получила права на энергообеспечение новых секторов.', mult: 1.25 },
+            { type: 'DUMP', text: 'Внеплановая проверка выявила износ сетей SvetOFF.', mult: 0.80 },
+            { type: 'PUMP', text: 'Запущен масштабный проект по модернизации энергосистемы города.', mult: 1.35 },
+            { type: 'DUMP', text: 'Масштабная авария на главной подстанции SvetOFF.', mult: 0.74 },
+            { type: 'PUMP', text: 'Правительство субсидирует зеленую энергетику SvetOFF.', mult: 1.45 },
+            { type: 'DUMP', text: 'Резкий рост цен на сырье обвалил маржинальность SvetOFF.', mult: 0.69 }
+        ],
+        BIOM: [
+            { type: 'PUMP', text: 'Инновационный биополимер BioMusor полностью заменил пластик.', mult: 1.35 },
+            { type: 'DUMP', text: 'Приостановлена лицензия BioMusor из-за экологических тестов.', mult: 0.74 },
+            { type: 'PUMP', text: 'BioMusor открывает сеть заводов по переработке нового поколения.', mult: 1.45 },
+            { type: 'DUMP', text: 'Партия биоматериалов BioMusor признана бракованной.', mult: 0.69 },
+            { type: 'PUMP', text: 'Глобальный тренд на эко-стандарты вывел BioMusor в топ.', mult: 1.55 },
+            { type: 'DUMP', text: 'Скандал с утилизацией отходов ударил по репутации BioMusor.', mult: 0.65 }
+        ],
+        VOID: [
+            { type: 'PUMP', text: 'Void Energy зафиксировала выход из сингулярности!', mult: 1.45 },
+            { type: 'DUMP', text: 'Коллапс квантовых стабилизаторов Void Energy.', mult: 0.69 },
+            { type: 'PUMP', text: 'Секретный эксперимент Void Energy увенчался колоссальным успехом.', mult: 1.55 },
+            { type: 'DUMP', text: 'Ученые фиксируют опасную нестабильность полей вокруг реактора Void.', mult: 0.65 },
+            { type: 'PUMP', text: 'Абсолютный прорыв: Void Energy открывает источник неисчерпаемой энергии!', mult: 1.65 },
+            { type: 'DUMP', text: 'Полная остановка реактора Void Energy из-за аномального сбоя.', mult: 0.61 }
+        ]
 };
 
         function getNewsExactTime(blockIndex) { return (blockIndex * 1 + 1) * 86400 + 43200; }
 
-        function getNewsMultiplierAtSecond(targetAATSecond, asset) {
-            const currentBlock = Math.floor((Math.floor(targetAATSecond / 86400) - 1) / 1);
+        function getNewsMultiplierAtSecond(targetDPTSecond, asset) {
+            const currentBlock = Math.floor((Math.floor(targetDPTSecond / 86400) - 1) / 1);
             let accumulatedMult = 1.0;
             const assetsArr = ['ROTH', 'SOFF', 'BIOM', 'VOID'];
 
             for (let b = 0; b <= currentBlock; b++) {
                 const exactNewsTime = getNewsExactTime(b);
-                if (exactNewsTime > targetAATSecond) continue;
+                if (exactNewsTime > targetDPTSecond) continue;
 
                 const targetedAsset = assetsArr[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length)];
                 if (targetedAsset === asset) {
                     const templates = newsTemplates[asset];
                     const tpl = templates[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * templates.length)];
-                    const elapsed = targetAATSecond - exactNewsTime;
+                    const elapsed = targetDPTSecond - exactNewsTime;
                     const floorLevel = tpl.type === 'PUMP' ? 1.06 : 0.95;
 
                     if (elapsed >= 0 && elapsed < 21600) {
@@ -1054,20 +1054,20 @@ accumulatedMult *= currentMult;
         }
 
         function getActiveNewsHistory() {
-            const currentAAT = getAATSecondPrecise();
-            const currentBlock = Math.floor((Math.floor(currentAAT / 86400) - 1) / 1);
+            const currentDPT = getDPTSecondPrecise();
+            const currentBlock = Math.floor((Math.floor(currentDPT / 86400) - 1) / 1);
             const assetsArr = ['ROTH', 'SOFF', 'BIOM', 'VOID'];
             const history = [];
 
             for (let b = Math.max(0, currentBlock - 100); b <= currentBlock; b++) {
                 const exactNewsTime = getNewsExactTime(b);
-                if (exactNewsTime > currentAAT) break;
+                if (exactNewsTime > currentDPT) break;
 
                 const targetedAsset = assetsArr[Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET) * assetsArr.length)];
                 const tpl = newsTemplates[targetedAsset][Math.floor(getSeedRandom(b + NEWS_SEED_OFFSET + 100) * newsTemplates[targetedAsset].length)];
 
                 history.unshift({
-                    dateStr: `${formatAATTimestamp(exactNewsTime, false)} AAT`,
+                    dateStr: `${formatDPTTimestamp(exactNewsTime, false)} DPT`,
                     asset: targetedAsset,
                     type: tpl.type,
                     text: tpl.text,
@@ -1103,10 +1103,10 @@ accumulatedMult *= currentMult;
             try { return await (await fetch('/api/leaderboard')).json(); } catch (e) { return []; }
         }
 
-        function getAbsolutePriceAtSecond(targetAATSecond, asset) {
+        function getAbsolutePriceAtSecond(targetDPTSecond, asset) {
             const config = assetConfigs[asset];
-            const assetTimeSec = targetAATSecond * config.timeScale;
-            const elapsedMonths = Math.max(0, (assetTimeSec - AAT_BASE_TIMESTAMP) / SECONDS_IN_MONTH);
+            const assetTimeSec = targetDPTSecond * config.timeScale;
+            const elapsedMonths = Math.max(0, (assetTimeSec - DPT_BASE_TIMESTAMP) / SECONDS_IN_MONTH);
             
             const baseTrendBase = config.basePrice * Math.pow(1.05, elapsedMonths);
             const chunkStep = TICK_INTERVAL_SECONDS;
@@ -1125,18 +1125,18 @@ accumulatedMult *= currentMult;
 
             const subDelta = (getSeedRandom(targetChunk + config.seedOffset * 3) - 0.5) * (config.vol * price * 0.4);
             price = Math.max(1.0, price + subDelta);
-            price *= getNewsMultiplierAtSecond(targetAATSecond, asset);
+            price *= getNewsMultiplierAtSecond(targetDPTSecond, asset);
 
             return fromNumber(price);
         }
 
         function getRawTicksHistory(asset) {
-            const currentAATSecond = getAATSecondPrecise();
+            const currentDPTSecond = getDPTSecondPrecise();
             const history = [];
             let ticksCount = 300, step = 1;
 
             for (let i = ticksCount - 1; i >= 0; i--) {
-                const sec = currentAATSecond - (i * step * TICK_INTERVAL_SECONDS);
+                const sec = currentDPTSecond - (i * step * TICK_INTERVAL_SECONDS);
                 history.push(toNumberBN(getAbsolutePriceAtSecond(sec, asset)));
             }
             return history;
@@ -1146,7 +1146,7 @@ accumulatedMult *= currentMult;
             const now = Date.now() / 1000;
             const elapsedRealMs = now - state.lastDepTime;
             if (elapsedRealMs >= 500) {
-                const effectiveSec = (elapsedRealMs / 1000) * AAT_SPEED_MULTIPLIER;
+                const effectiveSec = (elapsedRealMs / 1000) * DPT_SPEED_MULTIPLIER;
                 state.lastDepTime = now;
 
                 function compoundBN(dep, rate) {
@@ -1163,7 +1163,7 @@ accumulatedMult *= currentMult;
         }
 
         function checkShortLiquidations() {
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             ['ROTH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
                 const shortShares = state.shorts[asset] || createBN(0, 0);
                 if (shortShares.m > 0) {
@@ -1184,8 +1184,8 @@ accumulatedMult *= currentMult;
             });
         }
 
-        function updateAATClockFast() {
-            document.getElementById('aatClockDisplay').innerText = `Время по DPT: ${formatAATTimestamp(getAATSecondPrecise(), true)}`;
+        function updateDPTClockFast() {
+            document.getElementById('DPTClockDisplay').innerText = `Время по DPT: ${formatDPTTimestamp(getDPTSecondPrecise(), true)}`;
         }
 
         function switchTab(tabId) {
@@ -1234,8 +1234,8 @@ accumulatedMult *= currentMult;
         }
 
         function checkMonthlyLoanReset() {
-            const curSec = getAATSecondPrecise();
-            const cal = getAATCalendarDate(curSec);
+            const curSec = getDPTSecondPrecise();
+            const cal = getDPTCalendarDate(curSec);
             const currentMonthKey = cal.year * 12 + cal.month;
 
             if (!state.lastLoanMonthReset || state.lastLoanMonthReset < currentMonthKey) {
@@ -1354,7 +1354,7 @@ function getCurrentLoanDebt() {
     let elapsedRealSeconds = nowSec - state.lastLoanCompoundingTime;
     if (elapsedRealSeconds < 0) elapsedRealSeconds = 0;
 
-    const multiplier = typeof AAT_SPEED_MULTIPLIER !== 'undefined' ? AAT_SPEED_MULTIPLIER : 24;
+    const multiplier = typeof DPT_SPEED_MULTIPLIER !== 'undefined' ? DPT_SPEED_MULTIPLIER : 24;
     const elapsedGameSeconds = elapsedRealSeconds * multiplier;
 
     if (elapsedGameSeconds > 0) {
@@ -1447,7 +1447,7 @@ function getCurrentLoanDebt() {
                 chartInstance.data.datasets[0].borderColor = assetConfigs[selectedAsset].color;
                 chartInstance.update('none');
 
-                const priceBN = getAbsolutePriceAtSecond(getAATSecondPrecise(), selectedAsset);
+                const priceBN = getAbsolutePriceAtSecond(getDPTSecondPrecise(), selectedAsset);
                 document.getElementById('currentRate').innerText = formatBigNumberBN(priceBN, 2) + ' €';
                 updatePositionDisplay(priceBN);
             }
@@ -1463,7 +1463,7 @@ function getCurrentLoanDebt() {
 
 
         function updateCapitalizationDisplay() {
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             let capBN = state.abs || createBN(100, 0);
 
             if (state.deposits && state.deposits.EUR) capBN = addBN(capBN, state.deposits.EUR);
@@ -1516,7 +1516,7 @@ function getCurrentLoanDebt() {
 
 
         function updateBalanceGridAssets() {
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             ['ROTH', 'SOFF', 'BIOM', 'VOID'].forEach(asset => {
                 const priceBN = getAbsolutePriceAtSecond(curSec, asset);
                 const rateElem = document.getElementById(`rate-${asset}`);
@@ -1564,7 +1564,7 @@ function getCurrentLoanDebt() {
         function updateDepCalculationHint() {
             const hintElem = document.getElementById('depCalcHint');
             if (!hintElem) return;
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             const pctBN = fromNumber(depPercent / 100);
 
             if (selectedDepAsset === 'EUR') {
@@ -1598,7 +1598,7 @@ function getCurrentLoanDebt() {
 
         function updateDepositUI() {
             processDepositCompound();
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             if (selectedDepAsset === 'EUR') {
                 document.getElementById('depCurrentRate').innerText = '1.00 €';
                 document.getElementById('depHoldingsDisplay').innerText = formatBigNumberBN(state.deposits.EUR || createBN(0,0), 2) + ' €';
@@ -1631,7 +1631,7 @@ function getCurrentLoanDebt() {
                     addHistoryRecord('ДЕПОЗИТ €', `Выведено ${formatBigNumberBN(eurVal, 2)} €`, `+${formatBigNumberBN(eurVal, 2)} €`, createBN(1, 0), state.abs, 'EUR', depPercent / 100);
                 }
             } else {
-                const curSec = getAATSecondPrecise();
+                const curSec = getDPTSecondPrecise();
                 const priceBN = getAbsolutePriceAtSecond(curSec, selectedDepAsset);
 
                 if (actionType === 'BUY_EUR') {
@@ -1678,7 +1678,7 @@ function getCurrentLoanDebt() {
         function updateSliderCalculationHint() {
             const hintElem = document.getElementById('tradeCalcHint');
             if (!hintElem) return;
-            const priceBN = getAbsolutePriceAtSecond(getAATSecondPrecise(), selectedAsset);
+            const priceBN = getAbsolutePriceAtSecond(getDPTSecondPrecise(), selectedAsset);
             const pctBN = fromNumber(tradePercent / 100);
 
             if (tradeMode === 'LONG') {
@@ -1775,7 +1775,7 @@ function getCurrentLoanDebt() {
 
         function addHistoryRecord(type, textDesc, deltaStr, priceBN, currentBalanceBN, assetSymbol, tradeWeight, pnlPercentStr) {
             if (!Array.isArray(state.history)) state.history = [];
-            const currentAATSec = getAATSecondPrecise();
+            const currentDPTSec = getDPTSecondPrecise();
             
             state.history.unshift({
                 type,
@@ -1783,8 +1783,8 @@ function getCurrentLoanDebt() {
                 delta: deltaStr,
                 price: priceBN ? formatBigNumberBN(priceBN, 2) + ' €' : '—',
                 balance: currentBalanceBN,
-                datetime: `${formatAATTimestamp(currentAATSec, true)} AAT`,
-                timestamp: currentAATSec,
+                datetime: `${formatDPTTimestamp(currentDPTSec, true)} DPT`,
+                timestamp: currentDPTSec,
                 asset: assetSymbol || selectedAsset,
                 weight: tradeWeight !== undefined ? tradeWeight : 1.0,
                 pnlPercent: pnlPercentStr || ''
@@ -1895,7 +1895,7 @@ function getCurrentLoanDebt() {
 
         function getPlayerActivityStatus(lastActionTimestamp) {
             if (!lastActionTimestamp) return "был активен более вечности назад";
-            const diffSec = getAATSecondPrecise() - lastActionTimestamp;
+            const diffSec = getDPTSecondPrecise() - lastActionTimestamp;
             if (diffSec <= 86400) return "сейчас активен";
             if (diffSec <= 4 * 30 * 86400) return "был активен недавно";
             if (diffSec <= 24 * 30 * 86400) return "был активен давно";
@@ -1956,7 +1956,7 @@ function getCurrentLoanDebt() {
 
 
         function executeTrade(action) {
-            const curSec = getAATSecondPrecise();
+            const curSec = getDPTSecondPrecise();
             const priceBN = getAbsolutePriceAtSecond(curSec, selectedAsset);
             const pctBN = fromNumber(tradePercent / 100);
 
@@ -1975,7 +1975,7 @@ function getCurrentLoanDebt() {
                 state.assets[selectedAsset] = newTotalShares;
                 state.avgPrices[selectedAsset] = newAvgPriceBN;
                 state.abs = subBN(state.abs, spendEuro);
-                state.lastActionTime = getAATSecondPrecise();
+                state.lastActionTime = getDPTSecondPrecise();
 
                 showToast(`ЛОНГ: Куплено ${formatBigNumberBN(boughtShares, 4)} акц. ${selectedAsset}`);
                 addHistoryRecord('КУПИТЬ', `Купил ${selectedAsset} (${formatBigNumberBN(boughtShares, 4)} шт.)`, `-${formatBigNumberBN(spendEuro, 2)} €`, priceBN, state.abs, selectedAsset, 1.0);
@@ -2082,7 +2082,7 @@ function getCurrentLoanDebt() {
             initChart();
             renderTradeButtons();
             renderDepositButtons();
-            setInterval(updateAATClockFast, 50);
+            setInterval(updateDPTClockFast, 50);
             setInterval(updateChartTick, 500);
 
             const savedName = localStorage.getItem('ase_username');
@@ -2331,7 +2331,7 @@ updateUI();
             document.getElementById('loginModal').style.display = 'flex';
         }
 
-        function getAATCalendarDate(secInput) {
+        function getDPTCalendarDate(secInput) {
             let sec = Math.floor(secInput);
             let totalDays = Math.floor(sec / 86400);
             let secOfCurrentDay = sec % 86400;
@@ -2365,7 +2365,7 @@ updateUI();
         async function saveProfile() {
     if (!currentUser) return;
     try {
-        state.lastActionTime = getAATSecondPrecise();
+        state.lastActionTime = getDPTSecondPrecise();
         await fetch('/api/user/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2631,7 +2631,7 @@ function renderChatMessages(messages) {
                         <strong onclick="openUserProfile('${escapeHtml(msg.username || '')}')" style="color: #fff; cursor: pointer; font-size: 0.85rem;" class="chat-username">${escapeHtml(msg.username || '')}</strong>
                         <span style="color: var(--text-muted); font-size: 0.72rem; margin-left: 4px;">${escapeHtml(msg.tag || '')}</span>
                     </div>
-                    <span style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">${formatAATTimestamp ? formatAATTimestamp(msg.timestamp, false) : ''} AAT</span>
+                    <span style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace;">${formatDPTTimestamp ? formatDPTTimestamp(msg.timestamp, false) : ''} DPT</span>
                 </div>
                 <div style="font-size: 0.82rem; color: var(--text-main); word-break: break-word; line-height: 1.3;">
                     ${escapeHtml(msg.text || '')}
@@ -2665,7 +2665,7 @@ async function sendChatMessage() {
                 username: currentUser,
                 password: currentPassword,
                 text: text,
-                aatTimestamp: getAATSecondPrecise() // Передаем корректное игровое время!
+                DPTTimestamp: getDPTSecondPrecise() // Передаем корректное игровое время!
             })
         });
         const data = await res.json();

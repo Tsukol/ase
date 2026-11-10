@@ -115,7 +115,7 @@ app.post('/api/chat/send', (req, res) => {
         avatarEmoji: user.avatarEmoji || '👤',
         avatarColor: user.avatarColor || '#00f2fe',
         text: cleanText,
-        timestamp: req.body.aatTimestamp || Math.floor(Date.now() / 1000)
+        timestamp: req.body.DPTTimestamp || ((Date.now() / 1000 - 1793491200) * 48)
     };
 
     chatMessages.push(newMessage);
@@ -150,7 +150,7 @@ app.post('/api/user/login', (req, res) => {
             avatarColor: '#00f2fe',
             bio: '',
             notes: [],
-            lastRenameAATYear: 2500,
+            lastRenameDPTYear: 2500,
             state: null
         };
         usersData[cleanName] = user;

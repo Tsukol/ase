@@ -647,11 +647,11 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 5: ЗАМЕТКИ ТРЕЙДЕРА -->
+        <!-- ВКЛАДКА 5: ЗАМЕТКИ -->
 <div id="notesTab" class="tab-content hidden">
     <div class="terminal-card" style="padding: 15px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-main);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; color: var(--accent-blue); font-size: 16px;">📝 Заметки трейдера</h3>
+            <h3 style="margin: 0; color: var(--accent-blue); font-size: 16px;">📝 Заметки</h3>
             <span id="notesTotalCount" style="font-weight: bold; color: var(--text-muted); font-size: 13px;">0 / 50</span>
         </div>
 
@@ -686,7 +686,7 @@
         <div id="chatTab" class="tab-content hidden">
             <div class="terminal-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; height: 520px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">💬 Trollbox (Чат трейдеров)</span>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue); text-transform: uppercase;">💬 Чат</span>
                     <span style="font-size: 0.75rem; color: var(--text-muted);" id="chatStatus">Подключено</span>
                 </div>
 
@@ -1143,15 +1143,23 @@ accumulatedMult *= currentMult;
         }
 
         function processDepositCompound() {
-            const now = Date.now() / 1000;
-            const elapsedRealMs = now - state.lastDepTime;
-            if (elapsedRealMs >= 500) {
-                const effectiveSec = (elapsedRealMs / 1000) * DPT_SPEED_MULTIPLIER;
-                state.lastDepTime = now;
+            const currentDPT = getDPTSecondPrecise();
+            
+            // Если lastDepTime пустой, меньше нуля, или всё еще хранит старый земной Unix-таймстемп (> 1e9 и больше текущего DPT) — 
+            // автоматически приводим его к текущему игровому времени, предотвращая рассинхрон!
+            if (!state.lastDepTime || state.lastDepTime < 1000000 || state.lastDepTime > currentDPT) {
+                state.lastDepTime = currentDPT;
+            }
+
+            const elapsedGameSec = currentDPT - state.lastDepTime;
+            
+            // Начисляем проценты, если прошла хотя бы 0.5 игровых секунд
+            if (elapsedGameSec >= 0.5) {
+                state.lastDepTime = currentDPT;
 
                 function compoundBN(dep, rate) {
                     if (!dep || (dep.m === 0 && dep.e === 0)) return { m: 0, e: 0 };
-                    let newLog = dep.e + Math.log10(dep.m) + effectiveSec * Math.log10(rate);
+                    let newLog = dep.e + Math.log10(dep.m) + elapsedGameSec * Math.log10(rate);
                     let newE = Math.floor(newLog);
                     return normalizeBN({ m: Math.pow(10, newLog - newE), e: newE });
                 }
@@ -2684,4 +2692,3 @@ async function sendChatMessage() {
     </script>
 </body>
 </html>
-

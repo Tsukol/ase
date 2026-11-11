@@ -1,18 +1,48 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'users_db.json');
-const CHAT_FILE = path.join(__dirname, 'chat_db.json');
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(__dirname));
 
-// === ХРАНИЛИЩЕ В ПАМЯТИ И ЛОКАЛЬНАЯ БД ===
+// Настройка подключения к PostgreSQL (Render / Neon / Supabase)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+// Инициализация таблиц в PostgreSQL при запуске
+async function initDB() {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS app_storage (
+                key TEXT PRIMARY KEY,
+                data JSONB
+            );
+        `);
+        console.log('[DB] Таблица app_storage успешно проверена/создана.');
+        await loadFromCloud();
+    } catch (e) {
+        console.error('[DB] Ошибка инициализации базы данных:', e);
+    }
+}
+
+// === ХРАНИЛИЩЕ В ПАМЯТИ ===
 let usersData = {}; 
 let nextUserId = 1; 
+let chatMessages = [
+    {
+        id: 1,
+        username: 'System',
+        tag: '#Q8',
+        avatarEmoji: '🤖',
+        avatarColor: '#8b5cf6',
+        text: 'Добро пожаловать в Trollbox терминала Depasibo! Соблюдайте правила торговли и общения.',
+        timestamp: Math.floor((Date.now() / 1000 - 1793491200) * 48)
+    }
+];
 
 const TAG_CHARS = "0289PYLQGRJCUV"; 
 const BASE = TAG_CHARS.length;
@@ -27,70 +57,63 @@ function generateUserTag(idNumber) {
     return "#" + res;
 }
 
-if (fs.existsSync(DB_FILE)) {
+// Загрузка данных из PostgreSQL в память
+async function loadFromCloud() {
     try {
-        const rawData = fs.readFileSync(DB_FILE, 'utf8');
-        const parsed = JSON.parse(rawData);
-        usersData = parsed.users || {};
-        nextUserId = parsed.nextUserId || (Object.keys(usersData).length + 1);
-        
-        Object.values(usersData).forEach(u => {
-            if (!u.id) u.id = nextUserId++;
-            if (!u.tag) u.tag = generateUserTag(u.id);
-        });
-
-        console.log('[DB] База пользователей успешно загружена. Всего игроков:', Object.keys(usersData).length);
-    } catch (e) {
-        console.error('[DB] Ошибка чтения базы пользователей:', e);
-    }
-}
-
-function saveDB() {
-    try {
-        const dataToSave = {
-            nextUserId: nextUserId,
-            users: usersData
-        };
-        fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2), 'utf8');
-    } catch (e) {
-        console.error('[DB] Ошибка сохранения базы:', e);
-    }
-}
-
-// === ЧАТ ТРЕЙДЕРОВ (TROLLBOX) С ПЕРСИСТЕНТНОСТЬЮ ДО 1000 СООБЩЕНИЙ ===
-let chatMessages = [
-    {
-        id: 1,
-        username: 'System',
-        tag: '#Q8',
-        avatarEmoji: '🤖',
-        avatarColor: '#8b5cf6',
-        text: 'Добро пожаловать в Trollbox терминала ASE! Соблюдайте правила торговли и общения.',
-        timestamp: Math.floor(Date.now() / 1000)
-    }
-];
-
-if (fs.existsSync(CHAT_FILE)) {
-    try {
-        const rawChat = fs.readFileSync(CHAT_FILE, 'utf8');
-        const parsedChat = JSON.parse(rawChat);
-        if (Array.isArray(parsedChat) && parsedChat.length > 0) {
-            chatMessages = parsedChat;
+        const userRes = await pool.query('SELECT data FROM app_storage WHERE key = $1', ['users_db']);
+        if (userRes.rows.length > 0) {
+            const parsed = userRes.rows[0].data;
+            usersData = parsed.users || {};
+            nextUserId = parsed.nextUserId || (Object.keys(usersData).length + 1);
+            
+            Object.values(usersData).forEach(u => {
+                if (!u.id) u.id = nextUserId++;
+                if (!u.tag) u.tag = generateUserTag(u.id);
+            });
+            console.log('[DB] Пользователи загружены из облака. Игроков:', Object.keys(usersData).length);
         }
-        console.log('[Chat DB] История чата успешно загружена. Сообщений:', chatMessages.length);
+
+        const chatRes = await pool.query('SELECT data FROM app_storage WHERE key = $1', ['chat_db']);
+        if (chatRes.rows.length > 0 && Array.isArray(chatRes.rows[0].data)) {
+            chatMessages = chatRes.rows[0].data;
+            console.log('[DB] Чат загружен из облака. Сообщений:', chatMessages.length);
+        }
     } catch (e) {
-        console.error('[Chat DB] Ошибка чтения истории чата:', e);
+        console.error('[DB] Ошибка загрузки из облака:', e);
     }
 }
 
-function saveChatDB() {
+// Сохранение пользователей в PostgreSQL
+async function saveDB() {
     try {
-        fs.writeFileSync(CHAT_FILE, JSON.stringify(chatMessages, null, 2), 'utf8');
+        const dataToSave = { nextUserId, users: usersData };
+        await pool.query(
+            `INSERT INTO app_storage (key, data) VALUES ($1, $2) 
+             ON CONFLICT (key) DO UPDATE SET data = $2`,
+            ['users_db', JSON.stringify(dataToSave)]
+        );
     } catch (e) {
-        console.error('[Chat DB] Ошибка сохранения чата:', e);
+        console.error('[DB] Ошибка сохранения пользователей в БД:', e);
     }
 }
 
+// Сохранение чата в PostgreSQL
+async function saveChatDB() {
+    try {
+        await pool.query(
+            `INSERT INTO app_storage (key, data) VALUES ($1, $2) 
+             ON CONFLICT (key) DO UPDATE SET data = $2`,
+            ['chat_db', JSON.stringify(chatMessages)]
+        );
+    } catch (e) {
+        console.error('[DB] Ошибка сохранения чата в БД:', e);
+    }
+}
+
+// Запускаем инициализацию БД при старте
+initDB();
+
+// === ЧАТ ТРЕЙДЕРОВ (TROLLBOX) ===
 app.get('/api/chat/messages', (req, res) => {
     res.json({ success: true, messages: chatMessages.slice(-1000) });
 });
@@ -345,5 +368,5 @@ app.post('/api/notes/delete', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`[ASE Server v1.3.0] Сервер запущен на порту ${PORT}`);
+    console.log(`[ASE Server v1.3.1 - Cloud DB] Сервер запущен на порту ${PORT}`);
 });
